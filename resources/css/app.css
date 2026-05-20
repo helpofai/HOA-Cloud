@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .glass {
+        @apply backdrop-blur-lg bg-white/10 border border-white/20;
+    }
+    
+    .glass-dark {
+        @apply backdrop-blur-lg bg-black/30 border border-white/10;
+    }
+    
+    .glass-card {
+        @apply glass rounded-xl shadow-2xl;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
