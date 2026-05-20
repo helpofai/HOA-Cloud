@@ -12,6 +12,10 @@ use Illuminate\Notifications\Notifiable;
 
 use App\Core\Enums\UserRole;
 
+use App\Modules\File\Models\File;
+use App\Modules\Folder\Models\Folder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 #[Fillable(['name', 'email', 'password', 'role', 'quota_limit'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -56,5 +60,15 @@ class User extends Authenticatable
     public function hasRole(UserRole $role): bool
     {
         return $this->role->level() >= $role->level();
+    }
+
+    public function folders(): HasMany
+    {
+        return $this->hasMany(Folder::class);
+    }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(File::class);
     }
 }

@@ -1,0 +1,2 @@
+Put your Linux ffmpeg and ffprobe binaries in this folder.
+Ensure they have execution permissions (chmod +x).

@@ -87,77 +87,237 @@
         <div class="flex-1 overflow-y-auto custom-scroll p-8">
             <div class="flex items-center justify-between mb-8">
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight capitalize">{{ $section }}</h1>
-                    <p class="text-xs text-gray-500">Manage and organize your personal {{ $section }}</p>
+                    <div class="flex items-center gap-2 mb-1">
+                        @if($currentFolderUuid)
+                        <button wire:click="goBack" class="p-1 hover:bg-white/5 rounded-lg transition-colors text-gray-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        @endif
+                        <h1 class="text-2xl font-bold tracking-tight capitalize">{{ $currentFolder ? $currentFolder->name : $section }}</h1>
+                    </div>
+                    <p class="text-xs text-gray-500">Manage and organize your personal storage</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all">
+                    <button @click="$dispatch('open-modal', { name: 'create-folder' })" class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all text-gray-300">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                         New Folder
                     </button>
-                    <button class="px-5 py-2 bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
+                    <button id="upload-files-btn" class="px-5 py-2 bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                         Upload Files
                     </button>
                 </div>
             </div>
 
-            <!-- Media Grid (Netflix Style Placeholder) -->
+            <!-- Media Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
-                @for ($i = 1; $i <= 12; $i++)
-                <div class="group relative">
-                    <div class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer">
-                        <div class="w-full h-full bg-white/5 relative">
-                            <div class="absolute inset-0 shimmer opacity-10"></div>
+                <!-- Folders First -->
+                @foreach ($folders as $folder)
+                <div wire:key="folder-{{ $folder->uuid }}" class="group relative">
+                    <div wire:click="openFolder('{{ $folder->uuid }}')" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer flex flex-col items-center justify-center gap-4">
+                        <div class="w-20 h-20 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                        </div>
+                        <div class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-blue-400">Directory</div>
+                    </div>
+                    <div class="mt-3 px-1">
+                        <div class="text-sm font-bold truncate group-hover:text-blue-400 transition-colors">{{ $folder->name }}</div>
+                        <div class="text-[10px] text-gray-500 flex items-center gap-2">
+                            <span>{{ $folder->children->count() }} folders</span>
+                            <span>•</span>
+                            <span>{{ $folder->files->count() }} files</span>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+
+                <!-- Files -->
+                @foreach ($files as $file)
+                <div wire:key="file-{{ $file->uuid }}" class="group relative">
+                    <a href="{{ route('ghost-hop.entry', ['uuid' => $file->uuid]) }}" target="_blank" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer block">
+                        <div class="w-full h-full bg-white/5 relative flex items-center justify-center">
+                            @if($file->poster_path)
+                                @php
+                                    $posterUrl = Str::startsWith($file->poster_path, 'http') 
+                                        ? $file->poster_path 
+                                        : config('hoa-cloud.tmdb.image_url') . $file->poster_path;
+                                @endphp
+                                <img src="{{ $posterUrl }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                            @elseif(Str::startsWith($file->mime_type, 'image/'))
+                                <img src="/api/placeholder/400/600" class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity">
+                            @else
+                                <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
+                                    @if(Str::startsWith($file->mime_type, 'video/'))
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    @elseif(Str::startsWith($file->mime_type, 'audio/'))
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
+                                    @else
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    @endif
+                                </div>
+                            @endif
                             <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                                 <div class="w-12 h-12 rounded-full glass border-white/20 flex items-center justify-center">
                                     <svg class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                 </div>
                             </div>
+
+                            @if($file->rating)
+                            <div class="absolute top-2 right-2 px-1.5 py-0.5 glass rounded text-[9px] font-black text-yellow-500 flex items-center gap-1">
+                                <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                {{ $file->rating }}
+                            </div>
+                            @endif
                         </div>
-                    </div>
+                    </a>
                     <div class="mt-3 px-1">
-                        <div class="text-sm font-bold truncate group-hover:text-blue-400 transition-colors">Stranger Things S04 E{{ $i }}.mp4</div>
+                        <div class="text-sm font-bold truncate group-hover:text-blue-400 transition-colors">{{ $file->name }}</div>
                         <div class="text-[10px] text-gray-500 flex items-center gap-2">
-                            <span>4.2 GB</span>
+                            <span>{{ Number::fileSize($file->size) }}</span>
                             <span>•</span>
-                            <span>2 hours ago</span>
+                            <span>{{ $file->created_at->diffForHumans() }}</span>
                         </div>
                     </div>
                 </div>
-                @endfor
+                @endforeach
+
+                @if($folders->isEmpty() && $files->isEmpty())
+                <div class="col-span-full py-20 flex flex-col items-center justify-center text-center opacity-50">
+                    <svg class="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                    <h2 class="text-xl font-bold">No items found</h2>
+                    <p class="text-sm">Start by creating a folder or uploading files</p>
+                </div>
+                @endif
             </div>
         </div>
 
-        <!-- Upload Drawer (Google Drive Style Placeholder) -->
-        <div x-data="{ open: true }" :class="open ? 'translate-y-0' : 'translate-y-[calc(100%-48px)]'" class="absolute bottom-6 right-8 w-80 glass-card border-blue-500/20 shadow-2xl transition-transform duration-500 z-30 overflow-hidden">
+        <!-- Upload Drawer (Dynamic) -->
+        <div x-data="{ 
+                open: false, 
+                uploads: [],
+                addUpload(file) {
+                    this.uploads.push({
+                        id: file.uniqueIdentifier,
+                        name: file.fileName,
+                        progress: 0,
+                        status: 'uploading'
+                    });
+                    this.open = true;
+                },
+                updateProgress(id, progress) {
+                    const upload = this.uploads.find(u => u.id === id);
+                    if (upload) upload.progress = progress;
+                },
+                markSuccess(id) {
+                    const upload = this.uploads.find(u => u.id === id);
+                    if (upload) {
+                        upload.progress = 100;
+                        upload.status = 'completed';
+                    }
+                }
+            }" 
+            x-on:upload-started.window="addUpload($event.detail.file)"
+            x-on:upload-progress.window="updateProgress($event.detail.id, $event.detail.progress)"
+            x-on:upload-success.window="markSuccess($event.detail.id)"
+            x-show="uploads.length > 0"
+            :class="open ? 'translate-y-0' : 'translate-y-[calc(100%-48px)]'" 
+            class="absolute bottom-6 right-8 w-80 glass-card border-blue-500/20 shadow-2xl transition-transform duration-500 z-30 overflow-hidden"
+            x-cloak>
             <div @click="open = !open" class="h-12 flex items-center justify-between px-4 bg-blue-600/10 cursor-pointer hover:bg-blue-600/20 transition-colors">
                 <span class="text-xs font-bold flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                    Uploading 2 items
+                    Uploads (<span x-text="uploads.length"></span>)
                 </span>
                 <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </div>
-            <div class="p-4 space-y-4">
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-[10px]">
-                        <span class="truncate pr-4">Movie_High_Res_4K.mkv</span>
-                        <span class="text-blue-500 font-bold">45%</span>
+            <div class="p-4 space-y-4 max-h-60 overflow-y-auto custom-scroll">
+                <template x-for="upload in uploads" :key="upload.id">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-[10px]">
+                            <span class="truncate pr-4 text-gray-300" x-text="upload.name"></span>
+                            <span :class="upload.status === 'completed' ? 'text-green-500' : 'text-blue-500'" class="font-bold" x-text="upload.status === 'completed' ? 'Completed' : upload.progress + '%'"></span>
+                        </div>
+                        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div :class="upload.status === 'completed' ? 'bg-green-500' : 'bg-blue-600 shimmer'" class="h-full transition-all duration-300" :style="'width: ' + upload.progress + '%'"></div>
+                        </div>
                     </div>
-                    <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-blue-600 shimmer" style="width: 45%"></div>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-[10px]">
-                        <span class="truncate pr-4">Profile_Avatar_Final.png</span>
-                        <span class="text-green-500 font-bold">Completed</span>
-                    </div>
-                    <div class="w-full h-1 bg-green-600/20 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-500" style="width: 100%"></div>
-                    </div>
-                </div>
+                </template>
             </div>
         </div>
     </main>
+
+    <!-- Create Folder Modal -->
+    <div x-data="{ show: false }" 
+         x-on:open-modal.window="if ($event.detail.name === 'create-folder') show = true"
+         x-on:close-modal.window="if ($event.detail.name === 'create-folder') show = false"
+         x-show="show"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-6"
+         x-cloak>
+        <div x-show="show" x-transition.opacity class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        
+        <div x-show="show" x-transition.scale.95 class="w-full max-w-sm glass-card p-8 relative z-10 border-white/10 shadow-[0_0_50px_rgba(37,99,235,0.2)]">
+            <h3 class="text-xl font-bold mb-6">Create New Directory</h3>
+            
+            <form wire:submit.prevent="createFolder" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Directory Name</label>
+                    <input type="text" wire:model="newFolderName" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 transition-all" placeholder="Enter folder name..." autofocus>
+                    @error('newFolderName') <span class="text-red-500 text-[10px] font-bold mt-1 block uppercase">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button type="button" @click="show = false" class="flex-1 py-3 rounded-xl glass text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-widest shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">Initialize</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resumable.js Logic -->
+    <script src="{{ asset('js/resumable.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const resumable = new Resumable({
+                target: '{{ route('upload') }}',
+                query: {
+                    _token: '{{ csrf_token() }}',
+                    folder_uuid: @js($currentFolderUuid)
+                },
+                chunkSize: 10 * 1024 * 1024, // 10MB
+                simultaneousUploads: 3,
+                testChunks: true,
+                throttleProgressCallbacks: 1,
+            });
+
+            const uploadBtn = document.getElementById('upload-files-btn');
+            if (uploadBtn) {
+                resumable.assignBrowse(uploadBtn);
+            }
+
+            resumable.on('fileAdded', function (file) {
+                resumable.upload();
+                window.dispatchEvent(new CustomEvent('upload-started', { detail: { file: file } }));
+            });
+
+            resumable.on('fileProgress', function (file) {
+                window.dispatchEvent(new CustomEvent('upload-progress', { 
+                    detail: { 
+                        id: file.uniqueIdentifier, 
+                        progress: Math.floor(file.progress() * 100) 
+                    } 
+                }));
+            });
+
+            resumable.on('fileSuccess', function (file, message) {
+                window.dispatchEvent(new CustomEvent('upload-success', { detail: { id: file.uniqueIdentifier } }));
+                // Refresh component to show new file
+                Livewire.dispatch('refresh-files');
+            });
+
+            resumable.on('fileError', function (file, message) {
+                window.dispatchEvent(new CustomEvent('upload-error', { detail: { id: file.uniqueIdentifier, message: message } }));
+            });
+        });
+    </script>
 </div>
