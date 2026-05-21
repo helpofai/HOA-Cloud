@@ -28,6 +28,12 @@ class AdminMainLivewireComponent extends Component
     public $usersList = [];
     public $searchUser = '';
 
+    // Anti-Bot Data
+    public $blacklist = [];
+    public $searchBlacklist = '';
+    public $newBlacklistIp = '';
+    public $newBlacklistReason = '';
+
     // API Settings
     public $tmdbApiKey = '';
     public $omdbApiKey = '';
@@ -154,10 +160,36 @@ class AdminMainLivewireComponent extends Component
         }
     }
 
+    public function addToBlacklist()
+    {
+        $this->validate([
+            'newBlacklistIp' => 'required|ip|unique:blacklists,ip',
+            'newBlacklistReason' => 'nullable|string|max:255'
+        ]);
+
+        \App\Modules\Security\Models\Blacklist::create([
+            'ip' => $this->newBlacklistIp,
+            'reason' => $this->newBlacklistReason,
+            'type' => 'ip',
+            'is_active' => true
+        ]);
+
+        $this->newBlacklistIp = '';
+        $this->newBlacklistReason = '';
+        $this->dispatch('notify', message: 'IP added to blacklist.');
+    }
+
+    public function removeFromBlacklist($id)
+    {
+        \App\Modules\Security\Models\Blacklist::find($id)?->delete();
+        $this->dispatch('notify', message: 'IP removed from blacklist.');
+    }
+
     public function render()
     {
         $files = [];
         $usersData = [];
+        $blacklistData = [];
 
         if ($this->section === 'files') {
             $files = File::with(['user'])
@@ -175,11 +207,19 @@ class AdminMainLivewireComponent extends Component
                 })
                 ->latest()
                 ->paginate(20);
+        } elseif ($this->section === 'anti-bot') {
+            $blacklistData = \App\Modules\Security\Models\Blacklist::when($this->searchBlacklist, function($q) {
+                    $q->where('ip', 'like', "%{$this->searchBlacklist}%")
+                      ->orWhere('reason', 'like', "%{$this->searchBlacklist}%");
+                })
+                ->latest()
+                ->paginate(20);
         }
 
         return view('app.Modules.Admin.Views.admin-main-livewire-component', [
             'files' => $files,
-            'usersData' => $usersData
+            'usersData' => $usersData,
+            'blacklistData' => $blacklistData
         ])->layout('layouts.dashboard', ['title' => 'Super Admin - Hoa Cloud']);
     }
 }
