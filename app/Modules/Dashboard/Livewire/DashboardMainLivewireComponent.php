@@ -13,9 +13,10 @@ use App\Modules\Folder\DTOs\CreateFolderData;
 
 class DashboardMainLivewireComponent extends Component
 {
-    public $section = 'files'; // files, photos, music, videos, shared, bin
+    public $section = 'files'; // files, photos, music, videos, shared, bin, domain
     public $currentFolderUuid = null;
     public $newFolderName = '';
+    public $customDomain = '';
 
     protected $listeners = ['refresh-files' => '$refresh'];
 
@@ -27,6 +28,27 @@ class DashboardMainLivewireComponent extends Component
     public function mount()
     {
         $this->currentFolderUuid = request()->query('folder');
+        $this->customDomain = Auth::user()->custom_domain;
+    }
+
+    public function requestCustomDomain()
+    {
+        $this->validate([
+            'customDomain' => 'nullable|url|max:255'
+        ]);
+
+        $user = Auth::user();
+        
+        // If domain changed, reset approval
+        if ($user->custom_domain !== $this->customDomain) {
+            $user->update([
+                'custom_domain' => $this->customDomain,
+                'custom_domain_approved' => false
+            ]);
+            $this->dispatch('notify', message: 'Domain request submitted for approval.');
+        } else {
+            $this->dispatch('notify', message: 'No changes detected.');
+        }
     }
 
     public function createFolder(CreateFolderAction $action)

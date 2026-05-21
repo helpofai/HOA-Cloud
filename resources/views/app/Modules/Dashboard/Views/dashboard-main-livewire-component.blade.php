@@ -30,6 +30,10 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                 <span class="font-medium text-sm">Shared Links</span>
             </button>
+            <button wire:click="setSection('domain')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'domain' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                <span class="font-medium text-sm">Branding</span>
+            </button>
             <button wire:click="setSection('bin')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'bin' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 <span class="font-medium text-sm">Recycle Bin</span>
@@ -85,111 +89,115 @@
 
         <!-- Content Area -->
         <div class="flex-1 overflow-y-auto custom-scroll p-8">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        @if($currentFolderUuid)
-                        <button wire:click="goBack" class="p-1 hover:bg-white/5 rounded-lg transition-colors text-gray-500">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            @if($section === 'domain')
+                @include('app.Modules.Dashboard.Views.sections.domain')
+            @else
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            @if($currentFolderUuid)
+                            <button wire:click="goBack" class="p-1 hover:bg-white/5 rounded-lg transition-colors text-gray-500">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            @endif
+                            <h1 class="text-2xl font-bold tracking-tight capitalize">{{ $currentFolder ? $currentFolder->name : $section }}</h1>
+                        </div>
+                        <p class="text-xs text-gray-500">Manage and organize your personal storage</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button @click="$dispatch('open-modal', { name: 'create-folder' })" class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all text-gray-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            New Folder
                         </button>
-                        @endif
-                        <h1 class="text-2xl font-bold tracking-tight capitalize">{{ $currentFolder ? $currentFolder->name : $section }}</h1>
+                        <button id="upload-files-btn" class="px-5 py-2 bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            Upload Files
+                        </button>
                     </div>
-                    <p class="text-xs text-gray-500">Manage and organize your personal storage</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button @click="$dispatch('open-modal', { name: 'create-folder' })" class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all text-gray-300">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                        New Folder
-                    </button>
-                    <button id="upload-files-btn" class="px-5 py-2 bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        Upload Files
-                    </button>
-                </div>
-            </div>
 
-            <!-- Media Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
-                <!-- Folders First -->
-                @foreach ($folders as $folder)
-                <div wire:key="folder-{{ $folder->uuid }}" class="group relative">
-                    <div wire:click="openFolder('{{ $folder->uuid }}')" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer flex flex-col items-center justify-center gap-4">
-                        <div class="w-20 h-20 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                        </div>
-                        <div class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-blue-400">Directory</div>
-                    </div>
-                    <div class="mt-3 px-1">
-                        <div class="text-sm font-bold truncate group-hover:text-blue-400 transition-colors">{{ $folder->name }}</div>
-                        <div class="text-[10px] text-gray-500 flex items-center gap-2">
-                            <span>{{ $folder->children->count() }} folders</span>
-                            <span>•</span>
-                            <span>{{ $folder->files->count() }} files</span>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-
-                <!-- Files -->
-                @foreach ($files as $file)
-                <div wire:key="file-{{ $file->uuid }}" class="group relative">
-                    <a href="{{ $file->ghost_url }}" target="_blank" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer block">
-                        <div class="w-full h-full bg-white/5 relative flex items-center justify-center">
-                            @if($file->poster_path)
-                                @php
-                                    $posterUrl = Str::startsWith($file->poster_path, 'http') 
-                                        ? $file->poster_path 
-                                        : config('hoa-cloud.tmdb.image_url') . $file->poster_path;
-                                @endphp
-                                <img src="{{ $posterUrl }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
-                            @elseif(Str::startsWith($file->mime_type, 'image/'))
-                                <img src="/api/placeholder/400/600" class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity">
-                            @else
-                                <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
-                                    @if(Str::startsWith($file->mime_type, 'video/'))
-                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                    @elseif(Str::startsWith($file->mime_type, 'audio/'))
-                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
-                                    @else
-                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    @endif
-                                </div>
-                            @endif
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                                <div class="w-12 h-12 rounded-full glass border-white/20 flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
+                <!-- Media Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+                    <!-- Folders First -->
+                    @foreach ($folders as $folder)
+                    <div wire:key="folder-{{ $folder->uuid }}" class="group relative">
+                        <div wire:click="openFolder('{{ $folder->uuid }}')" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer flex flex-col items-center justify-center gap-4">
+                            <div class="w-20 h-20 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                             </div>
-
-                            @if($file->rating)
-                            <div class="absolute top-2 right-2 px-1.5 py-0.5 glass rounded text-[9px] font-black text-yellow-500 flex items-center gap-1">
-                                <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                {{ $file->rating }}
-                            </div>
-                            @endif
+                            <div class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-blue-400">Directory</div>
                         </div>
-                    </a>
-                    <div class="mt-3 px-1">
-                        <div class="text-sm font-bold truncate group-hover:text-blue-400 transition-colors">{{ $file->name }}</div>
-                        <div class="text-[10px] text-gray-500 flex items-center gap-2">
-                            <span>{{ Number::fileSize($file->size) }}</span>
-                            <span>•</span>
-                            <span>{{ $file->created_at->diffForHumans() }}</span>
+                        <div class="mt-3 px-1">
+                            <div class="text-sm font-bold truncate group-hover:text-blue-400 transition-colors">{{ $folder->name }}</div>
+                            <div class="text-[10px] text-gray-500 flex items-center gap-2">
+                                <span>{{ $folder->children->count() }} folders</span>
+                                <span>•</span>
+                                <span>{{ $folder->files->count() }} files</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                @endforeach
+                    @endforeach
 
-                @if($folders->isEmpty() && $files->isEmpty())
-                <div class="col-span-full py-20 flex flex-col items-center justify-center text-center opacity-50">
-                    <svg class="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                    <h2 class="text-xl font-bold">No items found</h2>
-                    <p class="text-sm">Start by creating a folder or uploading files</p>
+                    <!-- Files -->
+                    @foreach ($files as $file)
+                    <div wire:key="file-{{ $file->uuid }}" class="group relative">
+                        <a href="{{ $file->ghost_url }}" target="_blank" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer block">
+                            <div class="w-full h-full bg-white/5 relative flex items-center justify-center">
+                                @if($file->poster_path)
+                                    @php
+                                        $posterUrl = Str::startsWith($file->poster_path, 'http') 
+                                            ? $file->poster_path 
+                                            : config('hoa-cloud.tmdb.image_url') . $file->poster_path;
+                                    @endphp
+                                    <img src="{{ $posterUrl }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                                @elseif(Str::startsWith($file->mime_type, 'image/'))
+                                    <img src="/api/placeholder/400/600" class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity">
+                                @else
+                                    <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
+                                        @if(Str::startsWith($file->mime_type, 'video/'))
+                                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                        @elseif(Str::startsWith($file->mime_type, 'audio/'))
+                                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
+                                        @else
+                                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        @endif
+                                    </div>
+                                @endif
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                                    <div class="w-12 h-12 rounded-full glass border-white/20 flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+
+                                @if($file->rating)
+                                <div class="absolute top-2 right-2 px-1.5 py-0.5 glass rounded text-[9px] font-black text-yellow-500 flex items-center gap-1">
+                                    <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    {{ $file->rating }}
+                                </div>
+                                @endif
+                            </div>
+                        </a>
+                        <div class="mt-3 px-1">
+                            <div class="text-sm font-bold truncate group-hover:text-blue-400 transition-colors">{{ $file->name }}</div>
+                            <div class="text-[10px] text-gray-500 flex items-center gap-2">
+                                <span>{{ Number::fileSize($file->size) }}</span>
+                                <span>•</span>
+                                <span>{{ $file->created_at->diffForHumans() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+
+                    @if($folders->isEmpty() && $files->isEmpty())
+                    <div class="col-span-full py-20 flex flex-col items-center justify-center text-center opacity-50">
+                        <svg class="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                        <h2 class="text-xl font-bold">No items found</h2>
+                        <p class="text-sm">Start by creating a folder or uploading files</p>
+                    </div>
+                    @endif
                 </div>
-                @endif
-            </div>
+            @endif
         </div>
 
         <!-- Upload Drawer (Dynamic) -->

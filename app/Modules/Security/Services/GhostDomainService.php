@@ -15,12 +15,13 @@ class GhostDomainService
     {
         $domain = $this->determineDomain($file);
         
+        // Use relative path to append to the chosen domain
         $path = route('ghost-hop.entry', ['uuid' => $file->uuid], false);
         
         $scheme = request()->secure() ? 'https://' : 'http://';
         
-        // If domain doesn't start with http/https, prepend the current scheme
-        if (!str_starts_with($domain, 'http')) {
+        // Ensure domain has a scheme
+        if (!preg_match("~^(?:f|ht)tps?://~i", $domain)) {
             $domain = $scheme . ltrim($domain, '/');
         }
 
@@ -29,22 +30,25 @@ class GhostDomainService
 
     protected function determineDomain(File $file): string
     {
-        // 1. Check if the file owner has an approved custom domain
+        $isMultiDomainEnabled = (bool) Setting::get('multi_domain_enabled', false);
+
+        // If Multi-Domain is DISABLED, always use built-in system
+        if (!$isMultiDomainEnabled) {
+            return config('app.url');
+        }
+
+        // 1. Check if the file owner has an approved custom domain (Overrides Hydra nodes)
         if ($file->user && $file->user->custom_domain && $file->user->custom_domain_approved) {
             return $file->user->custom_domain;
         }
 
-        // 2. Check if global Multi-Domain Hydra is enabled
-        $isMultiDomainEnabled = Setting::get('multi_domain_enabled', false);
-        
-        if ($isMultiDomainEnabled) {
-            $activeNode = Node::getActiveRedirectNode();
-            if ($activeNode) {
-                return $activeNode->domain;
-            }
+        // 2. Try to get an active Redirect Node from Hydra
+        $activeNode = Node::getActiveRedirectNode();
+        if ($activeNode) {
+            return $activeNode->domain;
         }
 
-        // 3. Fallback to in-built default URL
+        // 3. Absolute Fallback: In-built system
         return config('app.url');
     }
 }
