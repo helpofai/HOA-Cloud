@@ -134,7 +134,7 @@
                 <!-- Files -->
                 @foreach ($files as $file)
                 <div wire:key="file-{{ $file->uuid }}" class="group relative">
-                    <a href="{{ route('ghost-hop.entry', ['uuid' => $file->uuid]) }}" target="_blank" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer block">
+                    <a href="{{ $file->ghost_url }}" target="_blank" class="aspect-[2/3] rounded-xl overflow-hidden glass-card border-white/5 group-hover:border-blue-500/30 transition-all duration-300 transform group-hover:scale-[1.02] cursor-pointer block">
                         <div class="w-full h-full bg-white/5 relative flex items-center justify-center">
                             @if($file->poster_path)
                                 @php

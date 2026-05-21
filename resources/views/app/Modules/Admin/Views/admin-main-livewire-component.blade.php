@@ -86,6 +86,9 @@
                 @case('overview')
                     @include('app.Modules.Admin.Views.sections.overview')
                     @break
+                @case('users')
+                    @include('app.Modules.Admin.Views.sections.users')
+                    @break
                 @case('files')
                     @include('app.Modules.Admin.Views.sections.files')
                     @break

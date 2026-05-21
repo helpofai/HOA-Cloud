@@ -69,4 +69,9 @@ class File extends Model
     {
         return $this->belongsTo(Folder::class);
     }
+
+    public function getGhostUrlAttribute(): string
+    {
+        return app(\App\Modules\Security\Services\GhostDomainService::class)->generateEntryUrl($this);
+    }
 }
