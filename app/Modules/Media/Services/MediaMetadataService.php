@@ -20,6 +20,66 @@ class MediaMetadataService
         $this->omdbApiKey = Setting::get('omdb_api_key', config('hoa-cloud.omdb.api_key', ''));
     }
 
+    /**
+     * Extract technical metadata using FFprobe
+     */
+    public function getTechnicalMetadata(string $path): array
+    {
+        if (!file_exists($path)) {
+            return [];
+        }
+
+        $ffprobe = config('hoa-cloud.bin.ffprobe');
+        
+        // On Windows, ensure it has .exe if missing
+        if (PHP_OS_FAMILY === 'Windows' && !str_ends_with($ffprobe, '.exe')) {
+            $ffprobe .= '.exe';
+        }
+
+        // Run FFprobe to get JSON metadata
+        $command = "\"$ffprobe\" -v quiet -print_format json -show_format -show_streams \"$path\"";
+        $output = shell_exec($command);
+        
+        if (!$output) {
+            return [];
+        }
+
+        $data = json_decode($output, true);
+        if (!$data) {
+            return [];
+        }
+
+        $metadata = [
+            'duration' => (float) ($data['format']['duration'] ?? 0),
+            'bitrate' => (int) ($data['format']['bit_rate'] ?? 0),
+            'format' => $data['format']['format_name'] ?? null,
+            'tags' => $data['format']['tags'] ?? [], // ID3 Tags
+        ];
+
+        // Find Video Stream for Resolution
+        foreach ($data['streams'] as $stream) {
+            if ($stream['codec_type'] === 'video') {
+                $metadata['width'] = $stream['width'] ?? null;
+                $metadata['height'] = $stream['height'] ?? null;
+                $metadata['codec'] = $stream['codec_name'] ?? null;
+                break;
+            }
+        }
+
+        // Find Audio Stream if no video (for music files)
+        if (!isset($metadata['codec'])) {
+            foreach ($data['streams'] as $stream) {
+                if ($stream['codec_type'] === 'audio') {
+                    $metadata['audio_codec'] = $stream['codec_name'] ?? null;
+                    $metadata['sample_rate'] = $stream['sample_rate'] ?? null;
+                    break;
+                }
+            }
+        }
+
+        return $metadata;
+    }
+
     public function fetchMetadata(string $filename): ?array
     {
         $cleanName = $this->cleanFileName($filename);

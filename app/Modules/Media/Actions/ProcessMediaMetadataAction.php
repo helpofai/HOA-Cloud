@@ -13,16 +13,26 @@ class ProcessMediaMetadataAction
 
     public function execute(File $file): bool
     {
-        $metadata = $this->service->fetchMetadata($file->name);
+        // 1. Fetch External Metadata (TMDB/OMDb)
+        $externalMetadata = $this->service->fetchMetadata($file->name);
 
-        if (!$metadata) {
-            return false;
-        }
+        // 2. Fetch Technical Metadata (FFprobe)
+        $filePath = storage_path("app/private/uploads/" . $file->disk_name);
+        $technicalMetadata = $this->service->getTechnicalMetadata($filePath);
 
-        $file->update(array_merge($metadata, [
-            'metadata_fetched' => true,
-        ]));
+        // Merge all metadata
+        $updateData = array_merge(
+            $externalMetadata ?? [],
+            [
+                'duration' => $technicalMetadata['duration'] ?? null,
+                'width' => $technicalMetadata['width'] ?? null,
+                'height' => $technicalMetadata['height'] ?? null,
+                'codec' => $technicalMetadata['codec'] ?? $technicalMetadata['audio_codec'] ?? null,
+                'technical_metadata' => $technicalMetadata,
+                'metadata_fetched' => true,
+            ]
+        );
 
-        return true;
+        return $file->update($updateData);
     }
 }

@@ -31,6 +31,11 @@ class File extends Model
         'cast',
         'genres',
         'metadata_fetched',
+        'duration',
+        'width',
+        'height',
+        'codec',
+        'technical_metadata',
     ];
 
     protected function casts(): array
@@ -40,6 +45,8 @@ class File extends Model
             'genres' => 'array',
             'metadata_fetched' => 'boolean',
             'rating' => 'decimal:1',
+            'technical_metadata' => 'array',
+            'duration' => 'decimal:2',
         ];
     }
 
