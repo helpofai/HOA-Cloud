@@ -5,11 +5,17 @@ namespace App\Modules\Admin\Livewire;
 use Livewire\Component;
 use App\Shared\Models\Setting;
 use App\Shared\Services\SharedHostingService;
+use App\Modules\File\Models\File;
+use Illuminate\Support\Facades\Storage;
 
 class AdminMainLivewireComponent extends Component
 {
     public $section = 'overview'; // overview, users, files, domains, media-engine, shared-hosting, settings, abuse
     
+    // File Monitoring Data
+    public $files = [];
+    public $searchFile = '';
+
     // API Settings
     public $tmdbApiKey = '';
     public $omdbApiKey = '';
@@ -38,6 +44,49 @@ class AdminMainLivewireComponent extends Component
         $this->dirMapping = $sharedHostingService->checkDirectoryMapping();
         $this->optimizationSuggestions = $sharedHostingService->getOptimizationSuggestions();
         $this->canUseSymlinks = $sharedHostingService->canUseSymlinks();
+
+        if ($this->section === 'files') {
+            $this->loadFiles();
+        }
+    }
+
+    public function loadFiles()
+    {
+        $this->files = File::with(['user'])
+            ->when($this->searchFile, function($q) {
+                $q->where('name', 'like', "%{$this->searchFile}%")
+                  ->orWhere('uuid', 'like', "%{$this->searchFile}%");
+            })
+            ->latest()
+            ->take(50)
+            ->get();
+    }
+
+    public function updatedSearchFile()
+    {
+        $this->loadFiles();
+    }
+
+    public function killFile($uuid)
+    {
+        $file = File::where('uuid', $uuid)->first();
+        if ($file) {
+            // Placeholder for Global Kill Switch: rotating share tokens or marking as restricted
+            $file->update(['metadata_fetched' => false]); 
+            $this->loadFiles();
+            $this->dispatch('notify', message: 'Global Kill Switch activated for file.');
+        }
+    }
+
+    public function deleteFile($uuid)
+    {
+        $file = File::where('uuid', $uuid)->first();
+        if ($file) {
+            Storage::disk('local')->delete("private/uploads/{$file->disk_name}");
+            $file->delete();
+            $this->loadFiles();
+            $this->dispatch('notify', message: 'File permanently purged from system.');
+        }
     }
 
     public function repairStorageLink(SharedHostingService $sharedHostingService)
@@ -62,6 +111,9 @@ class AdminMainLivewireComponent extends Component
     public function setSection($section)
     {
         $this->section = $section;
+        if ($section === 'files') {
+            $this->loadFiles();
+        }
         $this->dispatch('url-updated', section: $section);
     }
 
