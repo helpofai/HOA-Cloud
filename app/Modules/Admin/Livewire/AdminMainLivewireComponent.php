@@ -13,7 +13,6 @@ class AdminMainLivewireComponent extends Component
     public $section = 'overview'; // overview, users, files, domains, media-engine, shared-hosting, settings, abuse
     
     // File Monitoring Data
-    public $files = [];
     public $searchFile = '';
 
     // API Settings
@@ -44,36 +43,13 @@ class AdminMainLivewireComponent extends Component
         $this->dirMapping = $sharedHostingService->checkDirectoryMapping();
         $this->optimizationSuggestions = $sharedHostingService->getOptimizationSuggestions();
         $this->canUseSymlinks = $sharedHostingService->canUseSymlinks();
-
-        if ($this->section === 'files') {
-            $this->loadFiles();
-        }
-    }
-
-    public function loadFiles()
-    {
-        $this->files = File::with(['user'])
-            ->when($this->searchFile, function($q) {
-                $q->where('name', 'like', "%{$this->searchFile}%")
-                  ->orWhere('uuid', 'like', "%{$this->searchFile}%");
-            })
-            ->latest()
-            ->take(50)
-            ->get();
-    }
-
-    public function updatedSearchFile()
-    {
-        $this->loadFiles();
     }
 
     public function killFile($uuid)
     {
         $file = File::where('uuid', $uuid)->first();
         if ($file) {
-            // Placeholder for Global Kill Switch: rotating share tokens or marking as restricted
             $file->update(['metadata_fetched' => false]); 
-            $this->loadFiles();
             $this->dispatch('notify', message: 'Global Kill Switch activated for file.');
         }
     }
@@ -84,7 +60,6 @@ class AdminMainLivewireComponent extends Component
         if ($file) {
             Storage::disk('local')->delete("private/uploads/{$file->disk_name}");
             $file->delete();
-            $this->loadFiles();
             $this->dispatch('notify', message: 'File permanently purged from system.');
         }
     }
@@ -111,15 +86,25 @@ class AdminMainLivewireComponent extends Component
     public function setSection($section)
     {
         $this->section = $section;
-        if ($section === 'files') {
-            $this->loadFiles();
-        }
         $this->dispatch('url-updated', section: $section);
     }
 
     public function render()
     {
-        return view('app.Modules.Admin.Views.admin-main-livewire-component')
-            ->layout('layouts.dashboard', ['title' => 'Super Admin - Hoa Cloud']);
+        $files = [];
+        if ($this->section === 'files') {
+            $files = File::with(['user'])
+                ->when($this->searchFile, function($q) {
+                    $q->where('name', 'like', "%{$this->searchFile}%")
+                      ->orWhere('uuid', 'like', "%{$this->searchFile}%");
+                })
+                ->latest()
+                ->take(50)
+                ->get();
+        }
+
+        return view('app.Modules.Admin.Views.admin-main-livewire-component', [
+            'files' => $files
+        ])->layout('layouts.dashboard', ['title' => 'Super Admin - Hoa Cloud']);
     }
 }
