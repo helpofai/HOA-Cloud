@@ -16,7 +16,7 @@ use App\Modules\File\Models\File;
 use App\Modules\Folder\Models\Folder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'email', 'password', 'role', 'quota_limit', 'custom_domain', 'custom_domain_approved'])]
+#[Fillable(['name', 'email', 'password', 'role', 'quota_limit', 'settings', 'custom_domain', 'custom_domain_approved'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -34,6 +34,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'settings' => 'array',
             'custom_domain_approved' => 'boolean',
         ];
     }

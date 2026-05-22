@@ -33,9 +33,23 @@ class StreamingController extends Controller
         // Generate a new SINGLE-USE STREAM TOKEN for the player's internal request
         $streamToken = $this->tokenService->generate($fileUuid, $request->ip(), $request->userAgent());
 
+        // Watermark Logic
+        $adminWatermarkEnabled = (bool) \App\Shared\Models\Setting::get('watermark_enabled', true);
+        $userWatermarkEnabled = true;
+
+        if (\App\Shared\Models\Setting::get('watermark_user_control', true)) {
+            $userSettings = $file->user->settings ?? [];
+            $userWatermarkEnabled = (bool) ($userSettings['watermark_enabled'] ?? true);
+        }
+
         return view('app.Modules.Streaming.Views.watch', [
             'file' => $file,
             'streamToken' => $streamToken,
+            'watermark' => [
+                'enabled' => $adminWatermarkEnabled && $userWatermarkEnabled,
+                'opacity' => \App\Shared\Models\Setting::get('watermark_opacity', 0.2),
+                'speed' => \App\Shared\Models\Setting::get('watermark_speed', 'medium'),
+            ]
         ]);
     }
 

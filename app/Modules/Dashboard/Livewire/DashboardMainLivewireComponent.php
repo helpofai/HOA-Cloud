@@ -21,6 +21,10 @@ class DashboardMainLivewireComponent extends Component
     public $viewingShareReports = null;
     public $shareReports = [];
 
+    // Security Settings
+    public $watermarkEnabled = true;
+    public $allowWatermarkToggle = false;
+
     protected $listeners = ['refresh-files' => '$refresh'];
 
     protected $queryString = [
@@ -32,6 +36,24 @@ class DashboardMainLivewireComponent extends Component
     {
         $this->currentFolderUuid = request()->query('folder');
         $this->customDomain = Auth::user()->custom_domain;
+
+        // Load Security Settings from User JSON
+        $userSettings = Auth::user()->settings ?? [];
+        $this->watermarkEnabled = (bool) ($userSettings['watermark_enabled'] ?? true);
+        
+        // Admin setting to check if user CAN toggle watermark
+        $this->allowWatermarkToggle = (bool) \App\Shared\Models\Setting::get('watermark_user_control', true);
+    }
+
+    public function saveSecuritySettings()
+    {
+        $user = Auth::user();
+        $settings = $user->settings ?? [];
+        
+        $settings['watermark_enabled'] = $this->watermarkEnabled;
+        
+        $user->update(['settings' => $settings]);
+        $this->dispatch('notify', message: 'Security preferences updated.');
     }
 
     public function requestCustomDomain()

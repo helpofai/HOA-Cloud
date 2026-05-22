@@ -46,6 +46,12 @@ class AdminMainLivewireComponent extends Component
     public $omdbApiKey = '';
     public $useOmdb = false;
 
+    // Watermark Settings
+    public $watermarkEnabled = true;
+    public $watermarkOpacity = 0.2;
+    public $watermarkSpeed = 'medium';
+    public $watermarkUserControl = true;
+
     // Shared Hosting Optimization Data
     public $systemInfo = [];
     public $dirMapping = [];
@@ -61,10 +67,26 @@ class AdminMainLivewireComponent extends Component
         $this->useOmdb = (bool) Setting::get('use_omdb', false);
         $this->multiDomainEnabled = (bool) Setting::get('multi_domain_enabled', false);
 
+        // Load Watermark Settings
+        $this->watermarkEnabled = (bool) Setting::get('watermark_enabled', true);
+        $this->watermarkOpacity = (float) Setting::get('watermark_opacity', 0.2);
+        $this->watermarkSpeed = (string) Setting::get('watermark_speed', 'medium');
+        $this->watermarkUserControl = (bool) Setting::get('watermark_user_control', true);
+
         $this->loadSystemHealth($sharedHostingService);
         if ($this->section === 'domains') {
             $this->loadNodes();
         }
+    }
+
+    public function saveWatermarkSettings()
+    {
+        Setting::set('watermark_enabled', $this->watermarkEnabled, 'boolean', 'security');
+        Setting::set('watermark_opacity', $this->watermarkOpacity, 'string', 'security');
+        Setting::set('watermark_speed', $this->watermarkSpeed, 'string', 'security');
+        Setting::set('watermark_user_control', $this->watermarkUserControl, 'boolean', 'security');
+
+        $this->dispatch('notify', message: 'Watermarking policy updated globally');
     }
 
     public function loadNodes()

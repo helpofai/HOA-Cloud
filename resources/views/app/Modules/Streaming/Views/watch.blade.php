@@ -13,9 +13,11 @@
         <div class="ghost-overlay" id="ghost-overlay"></div>
 
         <!-- Dynamic Floating Watermark -->
-        <div class="dynamic-watermark">
-            HASH: {{ substr(md5(request()->ip() . (auth()->id() ?? 'GUEST')), 0, 8) }} | {{ request()->ip() }} | HOA CLOUD SECURE
+        @if($watermark['enabled'])
+        <div class="dynamic-watermark" style="opacity: {{ $watermark['opacity'] }}; animation: float-{{ $watermark['speed'] }} 20s infinite linear;">
+            HASH: {{ substr(md5(request()->ip() . (auth()->id() ?? 'GUEST') . $file->uuid), 0, 10) }} | {{ request()->ip() }} | HOA CLOUD SECURE
         </div>
+        @endif
 
         <!-- Professional Player -->
         <div class="w-full h-full">
