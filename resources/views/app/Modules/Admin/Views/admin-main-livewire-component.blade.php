@@ -28,6 +28,7 @@
                     ['id' => 'domains', 'label' => 'Ghost Hop Domains', 'icon' => 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9'],
                     ['id' => 'media-engine', 'label' => 'Media Control Center', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z'],
                     ['id' => 'anti-bot', 'label' => 'Anti-Bot & Crawler', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.233-2.047-.652-2.956z'],
+                    ['id' => 'kill-switch', 'label' => 'Global Kill Switch', 'icon' => 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'],
                     ['id' => 'shared-hosting', 'label' => 'Shared Hosting Opt.', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'],
                 ];
             @endphp
@@ -101,6 +102,9 @@
                     @break
                 @case('anti-bot')
                     @include('app.Modules.Admin.Views.sections.anti-bot')
+                    @break
+                @case('kill-switch')
+                    @include('app.Modules.Admin.Views.sections.kill-switch')
                     @break
                 @case('shared-hosting')
                     @include('app.Modules.Admin.Views.sections.shared-hosting')

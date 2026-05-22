@@ -23,6 +23,10 @@ class GhostHopController extends Controller
     {
         $file = File::where('uuid', $uuid)->firstOrFail();
 
+        if ($file->is_killed) {
+            abort(403, 'This content is no longer available.');
+        }
+
         if ($this->botDetector->isBot($request)) {
             // Serve a fake 404 to bots
             abort(404);

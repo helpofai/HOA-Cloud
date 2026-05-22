@@ -40,6 +40,16 @@ class GhostTokenService
             return null;
         }
 
+        // Check if file has been killed since token issuance
+        $isKilled = Cache::remember("file_killed:{$data['file_uuid']}", 60, function() use ($data) {
+            return \App\Modules\File\Models\File::where('uuid', $data['file_uuid'])->where('is_killed', true)->exists();
+        });
+
+        if ($isKilled) {
+            $this->burn($token);
+            return null;
+        }
+
         // For streaming, we might not burn it immediately if the player needs to make multiple range requests
         // But for the initial "Access", we can burn the "Access Token" and exchange it for a "Stream Token"
         

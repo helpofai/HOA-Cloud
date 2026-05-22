@@ -36,6 +36,7 @@ class File extends Model
         'height',
         'codec',
         'technical_metadata',
+        'is_killed',
     ];
 
     protected function casts(): array
@@ -44,6 +45,7 @@ class File extends Model
             'cast' => 'array',
             'genres' => 'array',
             'metadata_fetched' => 'boolean',
+            'is_killed' => 'boolean',
             'rating' => 'decimal:1',
             'technical_metadata' => 'array',
             'duration' => 'decimal:2',

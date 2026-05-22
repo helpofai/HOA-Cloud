@@ -14,10 +14,13 @@ class AdminMainLivewireComponent extends Component
 {
     use WithPagination;
 
-    public $section = 'overview'; // overview, users, files, domains, media-engine, shared-hosting, settings, abuse
+    public $section = 'overview'; // overview, users, files, domains, media-engine, anti-bot, kill-switch, shared-hosting, settings, abuse
     
     // File Monitoring Data
     public $searchFile = '';
+
+    // Global Kill Switch Data
+    public $searchKilled = '';
 
     // Multi-Domain Data
     public $multiDomainEnabled = false;
@@ -107,8 +110,19 @@ class AdminMainLivewireComponent extends Component
     {
         $file = File::where('uuid', $uuid)->first();
         if ($file) {
-            $file->update(['metadata_fetched' => false]); 
+            $file->update(['is_killed' => true]); 
+            \Illuminate\Support\Facades\Cache::forget("file_status:{$uuid}");
             $this->dispatch('notify', message: 'Global Kill Switch activated for file.');
+        }
+    }
+
+    public function reviveFile($uuid)
+    {
+        $file = File::where('uuid', $uuid)->first();
+        if ($file) {
+            $file->update(['is_killed' => false]);
+            \Illuminate\Support\Facades\Cache::forget("file_status:{$uuid}");
+            $this->dispatch('notify', message: 'File has been restored to active status.');
         }
     }
 
@@ -190,6 +204,7 @@ class AdminMainLivewireComponent extends Component
         $files = [];
         $usersData = [];
         $blacklistData = [];
+        $killedFilesData = [];
 
         if ($this->section === 'files') {
             $files = File::with(['user'])
@@ -214,12 +229,22 @@ class AdminMainLivewireComponent extends Component
                 })
                 ->latest()
                 ->paginate(20);
+        } elseif ($this->section === 'kill-switch') {
+            $killedFilesData = File::with(['user'])
+                ->where('is_killed', true)
+                ->when($this->searchKilled, function($q) {
+                    $q->where('name', 'like', "%{$this->searchKilled}%")
+                      ->orWhere('uuid', 'like', "%{$this->searchKilled}%");
+                })
+                ->latest()
+                ->paginate(20);
         }
 
         return view('app.Modules.Admin.Views.admin-main-livewire-component', [
             'files' => $files,
             'usersData' => $usersData,
-            'blacklistData' => $blacklistData
+            'blacklistData' => $blacklistData,
+            'killedFilesData' => $killedFilesData
         ])->layout('layouts.dashboard', ['title' => 'Super Admin - Hoa Cloud']);
     }
 }
