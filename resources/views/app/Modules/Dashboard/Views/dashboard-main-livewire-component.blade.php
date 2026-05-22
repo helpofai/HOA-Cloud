@@ -8,37 +8,53 @@
             <span class="text-lg font-bold tracking-tight">HOA<span class="text-blue-500">CLOUD</span></span>
         </div>
 
-        <nav class="flex-1 px-4 space-y-1 mt-4">
-            <button wire:click="setSection('files')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'files' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+        <nav class="flex-1 px-4 space-y-1 mt-4 overflow-y-auto custom-scroll">
+            <button wire:key="nav-files" wire:click="setSection('files')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'files' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                 <span class="font-medium text-sm">All Files</span>
             </button>
-            <button wire:click="setSection('photos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'photos' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="nav-photos" wire:click="setSection('photos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'photos' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 <span class="font-medium text-sm">Photos</span>
             </button>
-            <button wire:click="setSection('music')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'music' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="nav-music" wire:click="setSection('music')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'music' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/></svg>
                 <span class="font-medium text-sm">Music</span>
             </button>
-            <button wire:click="setSection('videos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'videos' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="nav-videos" wire:click="setSection('videos')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'videos' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 <span class="font-medium text-sm">Videos</span>
             </button>
+            <button wire:key="nav-advanced" wire:click="setSection('advanced-upload')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'advanced-upload' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+                <span class="font-medium text-sm">Media Studio</span>
+            </button>
+            <button wire:key="nav-pipeline" wire:click="setSection('pipeline')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'pipeline' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span class="font-medium text-sm">Task Pipeline</span>
+            </button>
             <div class="pt-6 pb-2 px-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Personal</div>
-            <button wire:click="setSection('shared')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'shared' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="nav-shared" wire:click="setSection('shared')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'shared' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                 <span class="font-medium text-sm">Shared Links</span>
             </button>
-            <button wire:click="setSection('domain')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'domain' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="nav-domain" wire:click="setSection('domain')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'domain' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
                 <span class="font-medium text-sm">Branding</span>
             </button>
-            <button wire:click="setSection('security')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'security' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="nav-security" wire:click="setSection('security')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'security' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 <span class="font-medium text-sm">Security</span>
             </button>
-            <button wire:click="setSection('bin')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'bin' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="nav-compliance" wire:click="setSection('compliance')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'compliance' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.233-2.047-.652-2.956z"/></svg>
+                <span class="font-medium text-sm">Compliance</span>
+            </button>
+            <button wire:key="nav-settings" wire:click="setSection('settings')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'settings' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="font-medium text-sm">Settings</span>
+            </button>
+            <button wire:key="nav-bin" wire:click="setSection('bin')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'bin' ? 'glass bg-blue-600/10 text-blue-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 <span class="font-medium text-sm">Recycle Bin</span>
             </button>
@@ -47,12 +63,12 @@
         <div class="p-4 glass m-4 rounded-2xl">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-gray-400">Storage</span>
-                <span class="text-[10px] text-blue-400">75%</span>
+                <span class="text-[10px] text-blue-400">{{ auth()->user()->usage_percentage }}%</span>
             </div>
             <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                <div class="h-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)]" style="width: 75%"></div>
+                <div class="h-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)]" style="width: {{ auth()->user()->usage_percentage }}%"></div>
             </div>
-            <div class="mt-2 text-[10px] text-gray-500 text-center">7.5 GB of 10 GB used</div>
+            <div class="mt-2 text-[10px] text-gray-500 text-center">{{ Number::fileSize(auth()->user()->quota_used) }} of {{ Number::fileSize(auth()->user()->quota_limit) }} used</div>
         </div>
     </aside>
 
@@ -68,6 +84,14 @@
             </div>
 
             <div class="flex items-center gap-4 ml-8">
+                <button wire:click="toggleTheme" class="w-10 h-10 flex items-center justify-center rounded-xl glass hover:bg-white/5 transition-all text-gray-400">
+                    @if($theme === 'dark')
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z"/></svg>
+                    @else
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    @endif
+                </button>
+
                 @if(auth()->user()->isAdmin())
                 <a href="{{ route('admin') }}" class="px-4 py-2 bg-red-600/10 border border-red-500/30 rounded-xl text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-600/20 transition-all flex items-center gap-2">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -99,6 +123,14 @@
                 @include('app.Modules.Dashboard.Views.sections.shared')
             @elseif($section === 'security')
                 @include('app.Modules.Dashboard.Views.sections.security')
+            @elseif($section === 'compliance')
+                @include('app.Modules.Dashboard.Views.sections.compliance')
+            @elseif($section === 'settings')
+                @include('app.Modules.Dashboard.Views.sections.settings')
+            @elseif($section === 'advanced-upload')
+                <livewire:advanced-media-upload />
+            @elseif($section === 'pipeline')
+                <livewire:media-pipeline />
             @else
                 <div class="flex items-center justify-between mb-8">
                     <div>
@@ -127,6 +159,10 @@
                             </div>
 
                             <div class="flex items-center gap-3">
+                                <button wire:click="setSection('advanced-upload')" class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all text-blue-500 border border-blue-500/20 shadow-[0_0_15px_rgba(37,99,235,0.1)]">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+                                    Advanced Studio
+                                </button>
                                 <button @click="$dispatch('open-modal', { name: 'create-folder' })" class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all text-gray-300">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                                     New Folder
@@ -138,6 +174,52 @@
                             </div>
                             </div>
                             </div>
+                
+                <!-- prominent Processing Console -->
+                @php
+                    $activeProcesses = \App\Modules\Media\Models\MediaProcess::where('user_id', auth()->id())
+                        ->whereIn('status', ['pending', 'processing'])
+                        ->latest()
+                        ->get();
+                @endphp
+
+                @if($activeProcesses->count() > 0)
+                <div wire:poll.3s class="mb-8 glass-card p-0 rounded-3xl border-blue-500/20 shadow-xl overflow-hidden animate-fadeIn">
+                    <div class="p-4 border-b border-white/5 bg-blue-600/5 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-[9px] font-black uppercase tracking-widest text-white">Active Pipeline</h3>
+                                <p class="text-[7px] font-bold text-blue-500 uppercase">Processing Media Node #01</p>
+                            </div>
+                        </div>
+                        <div class="text-[9px] font-black text-gray-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
+                            {{ $activeProcesses->count() }} ACTIVE
+                        </div>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        @foreach($activeProcesses as $proc)
+                        <div wire:key="dash-proc-{{ $proc->id }}" class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-[10px] font-black text-blue-500 shrink-0">
+                                        {{ strtoupper(substr($proc->type, 0, 1)) }}
+                                    </div>
+                                    <div class="text-[10px] font-bold text-gray-300 truncate">{{ $proc->file ? $proc->file->name : 'Initializing...' }}</div>
+                                </div>
+                                <div class="text-[10px] font-black text-blue-500">{{ number_format($proc->progress, 0) }}%</div>
+                            </div>
+                            <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-600 shimmer transition-all duration-1000" style="width: {{ $proc->progress }}%"></div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 <!-- Media Grid -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
                     <!-- Folders First -->
@@ -174,9 +256,8 @@
                                     <img src="{{ $posterUrl }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
                                 @elseif(Str::startsWith($file->mime_type, 'image/'))
-                                    <img src="/api/placeholder/400/600" class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity">
-                                @else
-                                    <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
+                                   <img src="https://placehold.co/400x600/1e293b/white?text=Image" class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity">
+                                @else                                    <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-blue-500 transition-colors">
                                         @if(Str::startsWith($file->mime_type, 'video/'))
                                             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                         @elseif(Str::startsWith($file->mime_type, 'audio/'))
@@ -199,6 +280,11 @@
                                     <button wire:click.prevent="generateShareLink('{{ $file->uuid }}')" class="w-10 h-10 rounded-full glass border-white/20 flex items-center justify-center hover:bg-blue-600 transition-all" title="Generate Share Link">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                                     </button>
+                                    @if(Str::startsWith($file->mime_type, 'video/'))
+                                    <button wire:click.prevent="optimizeVideo('{{ $file->uuid }}')" class="w-10 h-10 rounded-full glass border-white/20 flex items-center justify-center hover:bg-orange-600 transition-all" title="Optimize for Web (FFmpeg)">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    </button>
+                                    @endif
                                 </div>
 
                                 @if($file->rating)
@@ -235,24 +321,46 @@
         <div x-data="{ 
                 open: false, 
                 uploads: [],
+                formatBytes(bytes, decimals = 2) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const dm = decimals < 0 ? 0 : decimals;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+                },
                 addUpload(file) {
                     this.uploads.push({
                         id: file.uniqueIdentifier,
                         name: file.fileName,
+                        size: this.formatBytes(file.size),
+                        rawSize: file.size,
                         progress: 0,
+                        speed: '0 B/s',
+                        startTime: new Date().getTime(),
                         status: 'uploading'
                     });
                     this.open = true;
                 },
                 updateProgress(id, progress) {
                     const upload = this.uploads.find(u => u.id === id);
-                    if (upload) upload.progress = progress;
+                    if (upload) {
+                        upload.progress = progress;
+                        const now = new Date().getTime();
+                        const secondsElapsed = (now - upload.startTime) / 1000;
+                        if (secondsElapsed > 0) {
+                            const bytesUploaded = (progress / 100) * upload.rawSize;
+                            const speed = bytesUploaded / secondsElapsed;
+                            upload.speed = this.formatBytes(speed) + '/s';
+                        }
+                    }
                 },
                 markSuccess(id) {
                     const upload = this.uploads.find(u => u.id === id);
                     if (upload) {
                         upload.progress = 100;
                         upload.status = 'completed';
+                        upload.speed = 'Done';
                     }
                 }
             }" 
@@ -274,8 +382,15 @@
                 <template x-for="upload in uploads" :key="upload.id">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-[10px]">
-                            <span class="truncate pr-4 text-gray-300" x-text="upload.name"></span>
-                            <span :class="upload.status === 'completed' ? 'text-green-500' : 'text-blue-500'" class="font-bold" x-text="upload.status === 'completed' ? 'Completed' : upload.progress + '%'"></span>
+                            <div class="flex flex-col min-w-0 pr-4">
+                                <span class="truncate text-gray-300 font-bold" x-text="upload.name"></span>
+                                <div class="flex items-center gap-2 text-[9px] text-gray-500">
+                                    <span x-text="upload.size"></span>
+                                    <span class="w-1 h-1 rounded-full bg-gray-700"></span>
+                                    <span class="text-blue-500" x-text="upload.speed"></span>
+                                </div>
+                            </div>
+                            <span :class="upload.status === 'completed' ? 'text-green-500' : 'text-blue-500'" class="font-black text-sm" x-text="upload.progress + '%'"></span>
                         </div>
                         <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                             <div :class="upload.status === 'completed' ? 'bg-green-500' : 'bg-blue-600 shimmer'" class="h-full transition-all duration-300" :style="'width: ' + upload.progress + '%'"></div>

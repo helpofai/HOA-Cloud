@@ -23,7 +23,21 @@ class FetchMediaMetadataJob implements ShouldQueue
         $file = File::where('uuid', $this->fileUuid)->first();
 
         if ($file) {
+            $process = \App\Modules\Media\Models\MediaProcess::create([
+                'user_id' => $file->user_id,
+                'file_id' => $file->id,
+                'file_uuid' => $file->uuid,
+                'type' => 'metadata',
+                'status' => 'processing',
+                'progress' => 50,
+            ]);
+
             $action->execute($file);
+
+            $process->update([
+                'status' => 'completed',
+                'progress' => 100,
+            ]);
         }
     }
 }

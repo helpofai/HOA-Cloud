@@ -138,5 +138,57 @@
                 Changing API keys or rotating binary paths can disrupt active stream processes. Use diagnostic utilities with caution on production nodes.
             </p>
         </div>
+
+        <!-- Performance & Throttling -->
+        <x-admin.card 
+            title="Bandwidth Throttling" 
+            subtitle="Control streaming speeds per user role"
+            variant="orange"
+        >
+            <x-slot:icon>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </x-slot:icon>
+
+            <form wire:submit.prevent="saveBandwidthSettings" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Free Users (KB/s)</label>
+                        <input type="number" wire:model="defaultStreamSpeed" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-orange-500/50 transition-all outline-none" placeholder="e.g. 1024">
+                        <p class="text-[9px] text-gray-600 font-bold italic">1024 KB/s = 8 Mbps</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Guest Access (KB/s)</label>
+                        <input type="number" wire:model="guestStreamSpeed" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-orange-500/50 transition-all outline-none" placeholder="e.g. 512">
+                        <p class="text-[9px] text-gray-600 font-bold italic">Lower speed for non-users</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Pro/Admin (0 = Unlimited)</label>
+                        <input type="number" wire:model="proStreamSpeed" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-orange-500/50 transition-all outline-none" placeholder="0">
+                        <p class="text-[9px] text-gray-600 font-bold italic">Premium role bypass</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4">
+                    <p class="text-[9px] text-gray-500 max-w-xs uppercase font-bold leading-relaxed">
+                        Throttling uses PHP's output buffering and sleep cycles. High values (0) reduce server CPU load but increase bandwidth costs.
+                    </p>
+                    <button type="submit" class="px-10 py-4 bg-orange-600 rounded-xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-orange-500/30 hover:bg-orange-700 transition-all transform hover:scale-105 active:scale-95 text-white">
+                        Update Limits
+                    </button>
+                </div>
+            </form>
+        </x-admin.card>
+
+        <div class="p-8 glass-card border-white/5 rounded-3xl bg-blue-600/5">
+            <p class="text-[10px] text-gray-500 leading-relaxed italic font-bold uppercase tracking-widest">
+                System Advisory: HTTP 206 Partial Content Active
+            </p>
+            <p class="text-[10px] text-gray-600 mt-2">
+                All media streams are delivered using byte-range requests. This allows users to seek instantly 
+                without downloading the entire file, significantly saving server bandwidth and improving UX.
+            </p>
+        </div>
     </div>
 </div>

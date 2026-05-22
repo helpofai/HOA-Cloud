@@ -11,11 +11,17 @@ use Illuminate\Support\Facades\Auth;
 use App\Modules\Folder\Actions\CreateFolderAction;
 use App\Modules\Folder\DTOs\CreateFolderData;
 
+use Livewire\Attributes\Url;
+
 class DashboardMainLivewireComponent extends Component
 {
-    public $section = 'files'; // files, photos, music, videos, shared, bin, domain
-    public $filter = 'all'; // all, movies, music, docs
+    #[Url]
+    public $section = 'files'; // files, photos, music, videos, shared, bin, domain, pipeline
+
+    #[Url(as: 'folder')]
     public $currentFolderUuid = null;
+
+    public $filter = 'all'; // all, movies, music, docs
     public $newFolderName = '';
     public $customDomain = '';
     public $viewingShareReports = null;
@@ -24,13 +30,9 @@ class DashboardMainLivewireComponent extends Component
     // Security Settings
     public $watermarkEnabled = true;
     public $allowWatermarkToggle = false;
+    public $theme = 'dark';
 
     protected $listeners = ['refresh-files' => '$refresh'];
-
-    protected $queryString = [
-        'section',
-        'folder' => ['except' => '', 'as' => 'folder'],
-    ];
 
     public function mount()
     {
@@ -40,9 +42,16 @@ class DashboardMainLivewireComponent extends Component
         // Load Security Settings from User JSON
         $userSettings = Auth::user()->settings ?? [];
         $this->watermarkEnabled = (bool) ($userSettings['watermark_enabled'] ?? true);
+        $this->theme = (string) ($userSettings['theme'] ?? 'dark');
         
         // Admin setting to check if user CAN toggle watermark
         $this->allowWatermarkToggle = (bool) \App\Shared\Models\Setting::get('watermark_user_control', true);
+    }
+
+    public function toggleTheme()
+    {
+        $this->theme = $this->theme === 'dark' ? 'light' : 'dark';
+        $this->saveSecuritySettings();
     }
 
     public function saveSecuritySettings()
@@ -51,9 +60,11 @@ class DashboardMainLivewireComponent extends Component
         $settings = $user->settings ?? [];
         
         $settings['watermark_enabled'] = $this->watermarkEnabled;
+        $settings['theme'] = $this->theme;
         
         $user->update(['settings' => $settings]);
-        $this->dispatch('notify', message: 'Security preferences updated.');
+        $this->dispatch('theme-updated', theme: $this->theme);
+        $this->dispatch('notify', message: 'Preferences updated.');
     }
 
     public function requestCustomDomain()
@@ -146,23 +157,35 @@ class DashboardMainLivewireComponent extends Component
     {
         $query = Auth::user()->files();
 
-        if ($this->currentFolderUuid) {
-            $folder = $this->currentFolder;
-            if ($folder) {
-                $query = $folder->files();
-            }
+        // 1. Handle Sidebar Section Filtering (Global categories)
+        if ($this->section === 'photos') {
+            $query->where('mime_type', 'like', 'image/%');
+        } elseif ($this->section === 'music') {
+            $query->where('mime_type', 'like', 'audio/%');
+        } elseif ($this->section === 'videos') {
+            $query->where('mime_type', 'like', 'video/%');
         } else {
-            $query = $query->whereNull('folder_id');
+            // "Files" or other sections follow folder structure
+            if ($this->currentFolderUuid) {
+                $folder = $this->currentFolder;
+                if ($folder) {
+                    $query = $folder->files();
+                }
+            } else {
+                $query = $query->whereNull('folder_id');
+            }
         }
 
-        // Apply Media Filtering
+        // 2. Apply Manual UI Filtering (Movies, Music, Docs tabs)
         if ($this->filter === 'movies') {
             $query->where('mime_type', 'like', 'video/%');
         } elseif ($this->filter === 'music') {
             $query->where('mime_type', 'like', 'audio/%');
         } elseif ($this->filter === 'docs') {
-            $query->where('mime_type', 'like', 'application/%')
+            $query->where(function($q) {
+                $q->where('mime_type', 'like', 'application/%')
                   ->orWhere('mime_type', 'like', 'text/%');
+            });
         }
 
         return $query->latest()->get();
@@ -230,13 +253,39 @@ class DashboardMainLivewireComponent extends Component
         ]);
     }
 
+    public function optimizeVideo($fileUuid)
+    {
+        $file = File::where('uuid', $fileUuid)->where('user_id', Auth::id())->firstOrFail();
+        
+        \App\Modules\Media\Jobs\TranscodeVideoJob::dispatch($file->id, Auth::id());
+        
+        // Trigger background worker for shared hosting
+        app(\App\Modules\Support\Services\SharedHostingQueueService::class)->startWorker();
+        
+        $this->dispatch('notify', message: 'Video optimization queued.');
+    }
+
     public function render()
     {
-        return view('app.Modules.Dashboard.Views.dashboard-main-livewire-component', [
-            'folders' => $this->folders,
-            'files' => $this->files,
-            'shares' => $this->shares,
-            'currentFolder' => $this->currentFolder,
-        ])->layout('layouts.dashboard');
+        $data = [
+            'currentFolder' => null,
+            'folders' => collect(),
+            'files' => collect(),
+            'shares' => collect(),
+        ];
+
+        // Only load heavy data if we are in a section that needs it
+        if (in_array($this->section, ['files', 'photos', 'music', 'videos'])) {
+            $data['currentFolder'] = $this->currentFolder;
+            $data['folders'] = $this->folders;
+            $data['files'] = $this->files;
+        } elseif ($this->section === 'shared') {
+            $data['shares'] = $this->shares;
+        } elseif ($this->section === 'advanced-upload') {
+            // No extra data needed for initial load
+        }
+
+        return view('app.Modules.Dashboard.Views.dashboard-main-livewire-component', $data)
+            ->layout('layouts.dashboard');
     }
 }

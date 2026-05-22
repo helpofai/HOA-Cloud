@@ -15,6 +15,52 @@
         </div>
     </div>
 
+    <!-- Abuse System Policy -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <x-admin.card 
+            title="Reporting Policy" 
+            subtitle="Configure automated compliance triggers"
+            variant="blue"
+        >
+            <x-slot:icon>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.233-2.047-.652-2.956z"/></svg>
+            </x-slot:icon>
+
+            <form wire:submit.prevent="saveAbuseSettings" class="space-y-6">
+                <x-admin.toggle 
+                    label="Enable Public Reporting" 
+                    model="abuseSystemEnabled" 
+                    description="Allow users/guests to submit abuse reports via the public gateway."
+                />
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Auto-Kill Threshold</label>
+                    <input type="number" wire:model="abuseAutoKillThreshold" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-xs focus:border-blue-500/50 transition-all outline-none">
+                    <p class="text-[9px] text-gray-500 font-bold italic">Automatically disable links after X unique reports.</p>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="px-8 py-3 bg-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all">
+                        Save Policy
+                    </button>
+                </div>
+            </form>
+        </x-admin.card>
+
+        <div class="glass-card p-8 border-orange-500/10 flex flex-col justify-center">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-sm font-bold uppercase tracking-widest">Compliance Hub</h3>
+            </div>
+            <p class="text-xs text-gray-500 leading-relaxed italic">
+                A formal abuse system helps the platform look like a compliant, legitimate business to hosting providers and ISPs. 
+                It allows you to moderate content before third-party interventions occur.
+            </p>
+        </div>
+    </div>
+
     <!-- Active Reports Table -->
     <div class="glass-card overflow-hidden border-white/5 rounded-2xl">
         <div class="p-4 border-b border-white/5 bg-white/5">

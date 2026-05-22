@@ -73,4 +73,26 @@ class User extends Authenticatable
     {
         return $this->hasMany(File::class);
     }
+
+    /**
+     * Calculate total storage used by the user in bytes.
+     */
+    public function getQuotaUsedAttribute(): int
+    {
+        return (int) $this->files()->sum('size');
+    }
+
+    /**
+     * Calculate storage usage percentage.
+     */
+    public function getUsagePercentageAttribute(): float
+    {
+        if ($this->quota_limit <= 0) {
+            return 0;
+        }
+
+        $percentage = ($this->quota_used / $this->quota_limit) * 100;
+
+        return round(min($percentage, 100), 2);
+    }
 }

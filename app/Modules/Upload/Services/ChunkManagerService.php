@@ -40,13 +40,24 @@ class ChunkManagerService
             // All chunks uploaded, dispatch merge job
             $fileUuid = (string) Str::uuid();
             
+            // Create a "Merge" process IMMEDIATELY for UI feedback
+            $process = \App\Modules\Media\Models\MediaProcess::create([
+                'user_id' => auth()->id(),
+                'file_uuid' => $fileUuid,
+                'type' => 'merge',
+                'status' => 'pending',
+                'progress' => 0,
+                'command' => 'Queued: Merging chunks for ' . $filename,
+            ]);
+
             MergeChunksJob::dispatch(
                 $identifier,
                 $filename,
                 $totalChunks,
                 auth()->id(),
                 $folderUuid,
-                $fileUuid
+                $fileUuid,
+                $process->id
             );
 
             return [

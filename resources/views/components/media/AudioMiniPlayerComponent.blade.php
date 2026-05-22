@@ -19,7 +19,7 @@
      class="mini-player" x-cloak>
     
     <div class="mini-player-info">
-        <img :src="trackPoster || '/api/placeholder/56/56'" class="mini-player-art" alt="Track Poster">
+        <img :src="trackPoster || 'https://placehold.co/56x56/1e293b/white?text=Art'" class="mini-player-art" alt="Track Poster">
         <div class="overflow-hidden">
             <div class="text-sm font-bold text-white truncate" x-text="trackName"></div>
             <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Now Streaming</div>

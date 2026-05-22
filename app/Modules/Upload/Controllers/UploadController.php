@@ -7,10 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Modules\Upload\Services\ChunkManagerService;
 
+use App\Modules\Support\Services\SharedHostingQueueService;
+
 class UploadController extends Controller
 {
     public function __construct(
-        protected ChunkManagerService $chunkManager
+        protected ChunkManagerService $chunkManager,
+        protected SharedHostingQueueService $queueService
     ) {}
 
     public function upload(Request $request)
@@ -27,6 +30,9 @@ class UploadController extends Controller
         $result = $this->chunkManager->saveChunk($request);
 
         if ($result['status'] === 'completed') {
+            // Trigger background worker for shared hosting
+            $this->queueService->startWorker();
+
             return response()->json([
                 'status' => 'completed',
                 'file_uuid' => $result['file_uuid']

@@ -17,7 +17,15 @@ class ProcessMediaMetadataAction
         $externalMetadata = $this->service->fetchMetadata($file->name);
 
         // 2. Fetch Technical Metadata (FFprobe)
-        $filePath = storage_path("app/private/uploads/" . $file->disk_name);
+        $filePath = storage_path("app/private/" . $file->disk_name);
+        if (!file_exists($filePath)) {
+            $filePath = storage_path("app/private/uploads/" . $file->disk_name);
+        }
+
+        if (!file_exists($filePath)) {
+            return false;
+        }
+
         $technicalMetadata = $this->service->getTechnicalMetadata($filePath);
 
         // Merge all metadata

@@ -7,12 +7,9 @@
 
     <!-- Pre-compiled Tailwind & Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    
-    <!-- Alpine.js (Local) -->
-    <script defer src="{{ asset('js/alpine.js') }}"></script>
-    
     @livewireStyles
     <style>
+        [x-cloak] { display: none !important; }
         body {
             background-color: #0a0a0a;
             color: #f5f5f5;

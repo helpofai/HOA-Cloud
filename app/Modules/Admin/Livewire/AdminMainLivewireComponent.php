@@ -10,11 +10,14 @@ use App\Modules\Security\Models\Node;
 use Illuminate\Support\Facades\Storage;
 use Livewire\WithPagination;
 
+use Livewire\Attributes\Url;
+
 class AdminMainLivewireComponent extends Component
 {
     use WithPagination;
 
-    public $section = 'overview'; // overview, users, files, domains, media-engine, anti-bot, kill-switch, shared-hosting, settings, abuse
+    #[Url]
+    public $section = 'overview'; // overview, users, files, domains, media-engine, anti-bot, kill-switch, shared-hosting, settings, abuse, pipeline
     
     // File Monitoring Data
     public $searchFile = '';
@@ -28,6 +31,7 @@ class AdminMainLivewireComponent extends Component
 
     // Multi-Domain Data
     public $multiDomainEnabled = false;
+    public $hydraEnabled = false; // Alias for multiDomainEnabled or separate layer
     public $newNodeDomain = '';
     public $nodes = [];
 
@@ -40,6 +44,7 @@ class AdminMainLivewireComponent extends Component
     public $searchBlacklist = '';
     public $newBlacklistIp = '';
     public $newBlacklistReason = '';
+    public $antiBotEnabled = true;
 
     // API Settings
     public $tmdbApiKey = '';
@@ -52,13 +57,20 @@ class AdminMainLivewireComponent extends Component
     public $watermarkSpeed = 'medium';
     public $watermarkUserControl = true;
 
+    // Bandwidth Throttling Settings
+    public $defaultStreamSpeed = 1024; // KB/s
+    public $proStreamSpeed = 0; // 0 for unlimited
+    public $guestStreamSpeed = 512; // KB/s
+
+    // Abuse System Settings
+    public $abuseSystemEnabled = true;
+    public $abuseAutoKillThreshold = 5; // Kill after X reports
+
     // Shared Hosting Optimization Data
     public $systemInfo = [];
     public $dirMapping = [];
     public $optimizationSuggestions = [];
     public $canUseSymlinks = false;
-
-    protected $queryString = ['section'];
 
     public function mount(SharedHostingService $sharedHostingService)
     {
@@ -66,6 +78,8 @@ class AdminMainLivewireComponent extends Component
         $this->omdbApiKey = (string) Setting::get('omdb_api_key', config('hoa-cloud.omdb.api_key', ''));
         $this->useOmdb = (bool) Setting::get('use_omdb', false);
         $this->multiDomainEnabled = (bool) Setting::get('multi_domain_enabled', false);
+        $this->hydraEnabled = (bool) Setting::get('multi_domain_enabled', false);
+        $this->antiBotEnabled = (bool) Setting::get('anti_bot_enabled', true);
 
         // Load Watermark Settings
         $this->watermarkEnabled = (bool) Setting::get('watermark_enabled', true);
@@ -73,10 +87,28 @@ class AdminMainLivewireComponent extends Component
         $this->watermarkSpeed = (string) Setting::get('watermark_speed', 'medium');
         $this->watermarkUserControl = (bool) Setting::get('watermark_user_control', true);
 
+        // Load Bandwidth Settings
+        $this->defaultStreamSpeed = (int) Setting::get('default_stream_speed', 1024);
+        $this->proStreamSpeed = (int) Setting::get('pro_stream_speed', 0);
+        $this->guestStreamSpeed = (int) Setting::get('guest_stream_speed', 512);
+
+        // Load Abuse System Settings
+        $this->abuseSystemEnabled = (bool) Setting::get('abuse_system_enabled', true);
+        $this->abuseAutoKillThreshold = (int) Setting::get('abuse_auto_kill_threshold', 5);
+
         $this->loadSystemHealth($sharedHostingService);
         if ($this->section === 'domains') {
             $this->loadNodes();
         }
+    }
+
+    public function saveSecuritySettings()
+    {
+        Setting::set('watermark_enabled', $this->watermarkEnabled, 'boolean', 'security');
+        Setting::set('anti_bot_enabled', $this->antiBotEnabled, 'boolean', 'security');
+        Setting::set('multi_domain_enabled', $this->hydraEnabled, 'boolean', 'security');
+
+        $this->dispatch('notify', message: 'Core security and evasion policies updated.');
     }
 
     public function saveWatermarkSettings()
@@ -87,6 +119,23 @@ class AdminMainLivewireComponent extends Component
         Setting::set('watermark_user_control', $this->watermarkUserControl, 'boolean', 'security');
 
         $this->dispatch('notify', message: 'Watermarking policy updated globally');
+    }
+
+    public function saveBandwidthSettings()
+    {
+        Setting::set('default_stream_speed', $this->defaultStreamSpeed, 'integer', 'performance');
+        Setting::set('pro_stream_speed', $this->proStreamSpeed, 'integer', 'performance');
+        Setting::set('guest_stream_speed', $this->guestStreamSpeed, 'integer', 'performance');
+
+        $this->dispatch('notify', message: 'Bandwidth throttling policies updated.');
+    }
+
+    public function saveAbuseSettings()
+    {
+        Setting::set('abuse_system_enabled', $this->abuseSystemEnabled, 'boolean', 'security');
+        Setting::set('abuse_auto_kill_threshold', $this->abuseAutoKillThreshold, 'integer', 'security');
+
+        $this->dispatch('notify', message: 'Abuse system configuration updated.');
     }
 
     public function loadNodes()
@@ -156,10 +205,20 @@ class AdminMainLivewireComponent extends Component
     {
         $file = File::where('uuid', $uuid)->first();
         if ($file) {
-            Storage::disk('local')->delete("private/uploads/{$file->disk_name}");
+            $path = "private/{$file->disk_name}";
+            if (!Storage::disk('local')->exists($path)) {
+                $path = "private/uploads/{$file->disk_name}";
+            }
+            Storage::disk('local')->delete($path);
             $file->delete();
             $this->dispatch('notify', message: 'File permanently purged from system.');
         }
+    }
+
+    public function loadFiles()
+    {
+        // Livewire will automatically call render() after this
+        $this->dispatch('notify', message: 'Files list refreshed.');
     }
 
     public function repairStorageLink(SharedHostingService $sharedHostingService)
@@ -285,14 +344,16 @@ class AdminMainLivewireComponent extends Component
 
     public function render()
     {
-        $files = [];
-        $usersData = [];
-        $blacklistData = [];
-        $killedFilesData = [];
-        $abuseReportsData = [];
+        $data = [
+            'files' => [],
+            'usersData' => [],
+            'blacklistData' => [],
+            'killedFilesData' => [],
+            'abuseReportsData' => []
+        ];
 
         if ($this->section === 'files') {
-            $files = File::with(['user'])
+            $data['files'] = File::with(['user'])
                 ->when($this->searchFile, function($q) {
                     $q->where('name', 'like', "%{$this->searchFile}%")
                       ->orWhere('uuid', 'like', "%{$this->searchFile}%");
@@ -313,21 +374,21 @@ class AdminMainLivewireComponent extends Component
                 ->take(50)
                 ->get();
         } elseif ($this->section === 'users') {
-            $usersData = \App\Models\User::when($this->searchUser, function($q) {
+            $data['usersData'] = \App\Models\User::when($this->searchUser, function($q) {
                     $q->where('name', 'like', "%{$this->searchUser}%")
                       ->orWhere('email', 'like', "%{$this->searchUser}%");
                 })
                 ->latest()
                 ->paginate(20);
         } elseif ($this->section === 'anti-bot') {
-            $blacklistData = \App\Modules\Security\Models\Blacklist::when($this->searchBlacklist, function($q) {
+            $data['blacklistData'] = \App\Modules\Security\Models\Blacklist::when($this->searchBlacklist, function($q) {
                     $q->where('ip', 'like', "%{$this->searchBlacklist}%")
                       ->orWhere('reason', 'like', "%{$this->searchBlacklist}%");
                 })
                 ->latest()
                 ->paginate(20);
         } elseif ($this->section === 'kill-switch') {
-            $killedFilesData = File::with(['user'])
+            $data['killedFilesData'] = File::with(['user'])
                 ->where('is_killed', true)
                 ->when($this->searchKilled, function($q) {
                     $q->where('name', 'like', "%{$this->searchKilled}%")
@@ -336,7 +397,7 @@ class AdminMainLivewireComponent extends Component
                 ->latest()
                 ->paginate(20);
         } elseif ($this->section === 'abuse') {
-            $abuseReportsData = \App\Modules\Security\Models\AbuseReport::with(['file', 'share'])
+            $data['abuseReportsData'] = \App\Modules\Security\Models\AbuseReport::with(['file', 'share'])
                 ->when($this->searchAbuse, function($q) {
                     $q->where('reported_url', 'like', "%{$this->searchAbuse}%")
                       ->orWhere('reason', 'like', "%{$this->searchAbuse}%");
@@ -346,12 +407,7 @@ class AdminMainLivewireComponent extends Component
                 ->paginate(20);
         }
 
-        return view('app.Modules.Admin.Views.admin-main-livewire-component', [
-            'files' => $files,
-            'usersData' => $usersData,
-            'blacklistData' => $blacklistData,
-            'killedFilesData' => $killedFilesData,
-            'abuseReportsData' => $abuseReportsData
-        ])->layout('layouts.dashboard', ['title' => 'Super Admin - Hoa Cloud']);
+        return view('app.Modules.Admin.Views.admin-main-livewire-component', $data)
+            ->layout('layouts.dashboard', ['title' => 'Super Admin - Hoa Cloud']);
     }
 }

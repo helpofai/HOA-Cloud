@@ -23,3 +23,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin', AdminMainLivewireComponent::class)->name('admin');
     });
 });
+
+// Public Abuse Reporting Gateway
+Route::get('/report-abuse', \App\Modules\Security\Livewire\AbuseReportingLivewireComponent::class)->name('ghost-hop.report');

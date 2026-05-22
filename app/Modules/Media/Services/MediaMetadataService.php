@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\Log;
 
 class MediaMetadataService
 {
-    protected string $tmdbApiKey;
+    protected ?string $tmdbApiKey = null;
     protected string $tmdbBaseUrl = 'https://api.themoviedb.org/3';
     
-    protected string $omdbApiKey;
+    protected ?string $omdbApiKey = null;
     protected string $omdbBaseUrl = 'https://www.omdbapi.com/';
 
     public function __construct()
     {
-        $this->tmdbApiKey = Setting::get('tmdb_api_key', config('hoa-cloud.tmdb.api_key', ''));
-        $this->omdbApiKey = Setting::get('omdb_api_key', config('hoa-cloud.omdb.api_key', ''));
+        $this->tmdbApiKey = (string) Setting::get('tmdb_api_key', config('hoa-cloud.tmdb.api_key') ?? '');
+        $this->omdbApiKey = (string) Setting::get('omdb_api_key', config('hoa-cloud.omdb.api_key') ?? '');
     }
 
     /**
@@ -78,6 +78,77 @@ class MediaMetadataService
         }
 
         return $metadata;
+    }
+
+    public function search(string $query): array
+    {
+        try {
+            $search = Http::get("{$this->tmdbBaseUrl}/search/multi", [
+                'api_key' => $this->tmdbApiKey,
+                'query' => $query,
+                'include_adult' => false,
+            ]);
+
+            if ($search->successful()) {
+                return collect($search->json()['results'] ?? [])
+                    ->filter(fn($r) => in_array($r['media_type'] ?? '', ['movie', 'tv']))
+                    ->map(fn($r) => [
+                        'id' => $r['id'],
+                        'title' => $r['title'] ?? $r['name'] ?? 'Unknown',
+                        'release_date' => $r['release_date'] ?? $r['first_air_date'] ?? 'N/A',
+                        'poster_path' => $r['poster_path'] ?? null,
+                        'overview' => $r['overview'] ?? '',
+                        'media_type' => $r['media_type'],
+                        'popularity' => $r['popularity'] ?? 0,
+                    ])
+                    ->sortByDesc('popularity')
+                    ->values()
+                    ->toArray();
+            }
+        } catch (\Exception $e) {
+            Log::error("TMDB Search Error: " . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    public function getDetails(string $type, int $id): ?array
+    {
+        try {
+            $details = Http::get("{$this->tmdbBaseUrl}/{$type}/{$id}", [
+                'api_key' => $this->tmdbApiKey,
+                'append_to_response' => 'credits',
+            ]);
+
+            if ($details->successful()) {
+                $data = $details->json();
+                
+                $cast = collect($data['credits']['cast'] ?? [])
+                    ->take(10)
+                    ->map(fn($c) => $c['name'])
+                    ->toArray();
+
+                $genres = collect($data['genres'] ?? [])
+                    ->map(fn($g) => $g['name'])
+                    ->toArray();
+
+                return [
+                    'poster_path' => $data['poster_path'] ?? null,
+                    'backdrop_path' => $data['backdrop_path'] ?? null,
+                    'overview' => $data['overview'] ?? null,
+                    'rating' => $data['vote_average'] ?? null,
+                    'release_date' => $data['release_date'] ?? $data['first_air_date'] ?? null,
+                    'media_type' => $type,
+                    'cast' => $cast,
+                    'genres' => $genres,
+                    'title' => $data['title'] ?? $data['name'] ?? 'Unknown',
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error("TMDB Details Error: " . $e->getMessage());
+        }
+
+        return null;
     }
 
     public function fetchMetadata(string $filename): ?array

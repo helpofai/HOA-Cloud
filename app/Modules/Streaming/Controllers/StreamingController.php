@@ -69,10 +69,16 @@ class StreamingController extends Controller
         }
 
         $file = File::where('uuid', $fileUuid)->firstOrFail();
-        $path = storage_path("app/private/uploads/{$file->disk_name}");
+        $path = storage_path("app/private/{$file->disk_name}");
 
         if (!file_exists($path)) {
-            abort(404, 'Physical file not found.');
+            // Fallback for older files
+            $oldPath = storage_path("app/private/uploads/{$file->disk_name}");
+            if (file_exists($oldPath)) {
+                $path = $oldPath;
+            } else {
+                abort(404, 'Physical file not found.');
+            }
         }
 
         // Determine speed limit based on user role
@@ -109,12 +115,27 @@ class StreamingController extends Controller
     {
         $user = auth()->user();
         
-        // If requester is the owner, or an admin/pro, unlimited
-        if ($user && ($user->isAdmin() || $user->role === \App\Core\Enums\UserRole::PRO || $user->id === $owner->id)) {
+        // 1. If requester is an admin/super-admin, unlimited
+        if ($user && $user->isAdmin()) {
             return null;
         }
 
-        // Default limit for guests or standard users (1000 KB/s = ~8Mbps)
+        // 2. If requester is the owner
+        if ($user && $user->id === $owner->id) {
+            // Check if pro owners get unlimited
+            if ($user->role === \App\Core\Enums\UserRole::PRO) {
+                $proLimit = (int) \App\Shared\Models\Setting::get('pro_stream_speed', 0);
+                return $proLimit > 0 ? $proLimit : null;
+            }
+            return (int) \App\Shared\Models\Setting::get('default_stream_speed', 1024);
+        }
+
+        // 3. For guest/public access
+        if (!$user) {
+            return (int) \App\Shared\Models\Setting::get('guest_stream_speed', 512);
+        }
+
+        // 4. Default for logged-in standard users viewing other's content
         return (int) \App\Shared\Models\Setting::get('default_stream_speed', 1024);
     }
 }

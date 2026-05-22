@@ -114,6 +114,23 @@
         }
         return -1;
     }
+    $.getFromUniqueIdentifier = function(uniqueIdentifier){
+      var ret = false;
+      $h.each($.files, function(f){
+        if(f.uniqueIdentifier==uniqueIdentifier) ret = f;
+      });
+      return(ret);
+    };
+    $.isUploading = function(){
+      var uploading = false;
+      $h.each($.files, function(f){
+        if(f.isUploading()) {
+          uploading = true;
+          return(false);
+        }
+      });
+      return(uploading);
+    };
 
     $.events = [];
     $.on = function(event,callback){

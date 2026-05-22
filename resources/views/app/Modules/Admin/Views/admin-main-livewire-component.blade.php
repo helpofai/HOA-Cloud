@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        <nav class="flex-1 px-4 space-y-1 mt-4">
+        <nav class="flex-1 px-4 space-y-1 mt-4 overflow-y-auto custom-scroll">
             @php
                 $menuItems = [
                     ['id' => 'overview', 'label' => 'Overview', 'icon' => 'M4 6h16M4 12h16M4 18h7'],
@@ -31,22 +31,23 @@
                     ['id' => 'anti-bot', 'label' => 'Anti-Bot & Crawler', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.233-2.047-.652-2.956z'],
                     ['id' => 'kill-switch', 'label' => 'Global Kill Switch', 'icon' => 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'],
                     ['id' => 'shared-hosting', 'label' => 'Shared Hosting Opt.', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'],
+                    ['id' => 'pipeline', 'label' => 'Media Pipeline', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z'],
                 ];
             @endphp
 
             @foreach($menuItems as $item)
-            <button wire:click="setSection('{{ $item['id'] }}')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === $item['id'] ? 'glass bg-red-600/10 text-red-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="admin-nav-{{ $item['id'] }}" wire:click="setSection('{{ $item['id'] }}')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === $item['id'] ? 'glass bg-red-600/10 text-red-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
                 <span class="font-medium text-sm">{{ $item['label'] }}</span>
             </button>
             @endforeach
             
             <div class="pt-6 pb-2 px-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Security</div>
-            <button wire:click="setSection('abuse')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'abuse' ? 'glass bg-red-600/10 text-red-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="admin-nav-abuse" wire:click="setSection('abuse')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'abuse' ? 'glass bg-red-600/10 text-red-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span class="font-medium text-sm">Abuse Reports</span>
             </button>
-            <button wire:click="setSection('settings')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'settings' ? 'glass bg-red-600/10 text-red-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
+            <button wire:key="admin-nav-settings" wire:click="setSection('settings')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ $section === 'settings' ? 'glass bg-red-600/10 text-red-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <span class="font-medium text-sm">System Config</span>
             </button>
@@ -115,6 +116,12 @@
                     @break
                 @case('shared-hosting')
                     @include('app.Modules.Admin.Views.sections.shared-hosting')
+                    @break
+                @case('settings')
+                    @include('app.Modules.Admin.Views.sections.settings')
+                    @break
+                @case('pipeline')
+                    <livewire:media-pipeline />
                     @break
                 @default
                     @include('app.Modules.Admin.Views.sections.under-construction')
