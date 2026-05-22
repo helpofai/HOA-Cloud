@@ -17,6 +17,8 @@ class DashboardMainLivewireComponent extends Component
     public $currentFolderUuid = null;
     public $newFolderName = '';
     public $customDomain = '';
+    public $viewingShareReports = null;
+    public $shareReports = [];
 
     protected $listeners = ['refresh-files' => '$refresh'];
 
@@ -131,11 +133,56 @@ class DashboardMainLivewireComponent extends Component
         return $query->whereNull('folder_id')->get();
     }
 
+    public function getSharesProperty()
+    {
+        return \App\Modules\File\Models\Share::with('file')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+    }
+
+    public function generateShareLink($fileUuid)
+    {
+        $file = File::where('uuid', $fileUuid)->where('user_id', Auth::id())->firstOrFail();
+
+        \App\Modules\File\Models\Share::create([
+            'file_id' => $file->id,
+            'user_id' => Auth::id(),
+            'is_active' => true,
+        ]);
+
+        $this->dispatch('notify', message: 'New sharing link generated.');
+    }
+
+    public function toggleShare($shareId)
+    {
+        $share = \App\Modules\File\Models\Share::where('id', $shareId)->where('user_id', Auth::id())->first();
+        if ($share) {
+            $share->update(['is_active' => !$share->is_active]);
+            $this->dispatch('notify', message: $share->is_active ? 'Link activated.' : 'Link revoked.');
+        }
+    }
+
+    public function deleteShare($shareId)
+    {
+        \App\Modules\File\Models\Share::where('id', $shareId)->where('user_id', Auth::id())->delete();
+        $this->dispatch('notify', message: 'Sharing link deleted.');
+    }
+
+    public function viewReports($shareId)
+    {
+        $share = \App\Modules\File\Models\Share::where('id', $shareId)->where('user_id', Auth::id())->firstOrFail();
+        $this->viewingShareReports = $shareId;
+        $this->shareReports = \App\Modules\Security\Models\AbuseReport::where('share_id', $shareId)->get();
+        $this->dispatch('open-modal', name: 'view-reports');
+    }
+
     public function render()
     {
         return view('app.Modules.Dashboard.Views.dashboard-main-livewire-component', [
             'folders' => $this->folders,
             'files' => $this->files,
+            'shares' => $this->shares,
             'currentFolder' => $this->currentFolder,
         ])->layout('layouts.dashboard');
     }

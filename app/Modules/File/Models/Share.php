@@ -43,4 +43,38 @@ class Share extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getGhostUrlAttribute(): string
+    {
+        $domainService = app(\App\Modules\Security\Services\GhostDomainService::class);
+        $domain = $this->determineDomain();
+        $path = route('ghost-hop.share', ['slug' => $this->slug], false);
+        $scheme = request()->secure() ? 'https://' : 'http://';
+        
+        if (!preg_match("~^(?:f|ht)tps?://~i", $domain)) {
+            $domain = $scheme . ltrim($domain, '/');
+        }
+
+        return rtrim($domain, '/') . $path;
+    }
+
+    protected function determineDomain(): string
+    {
+        $isMultiDomainEnabled = (bool) \App\Shared\Models\Setting::get('multi_domain_enabled', false);
+
+        if (!$isMultiDomainEnabled) {
+            return config('app.url');
+        }
+
+        if ($this->user && $this->user->custom_domain && $this->user->custom_domain_approved) {
+            return $this->user->custom_domain;
+        }
+
+        $activeNode = \App\Modules\Security\Models\Node::getActiveRedirectNode();
+        if ($activeNode) {
+            return $activeNode->domain;
+        }
+
+        return config('app.url');
+    }
 }

@@ -91,6 +91,8 @@
         <div class="flex-1 overflow-y-auto custom-scroll p-8">
             @if($section === 'domain')
                 @include('app.Modules.Dashboard.Views.sections.domain')
+            @elseif($section === 'shared')
+                @include('app.Modules.Dashboard.Views.sections.shared')
             @else
                 <div class="flex items-center justify-between mb-8">
                     <div>
@@ -164,10 +166,13 @@
                                         @endif
                                     </div>
                                 @endif
-                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                                    <div class="w-12 h-12 rounded-full glass border-white/20 flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 gap-3">
+                                    <div class="w-10 h-10 rounded-full glass border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
+                                        <svg class="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                     </div>
+                                    <button wire:click.prevent="generateShareLink('{{ $file->uuid }}')" class="w-10 h-10 rounded-full glass border-white/20 flex items-center justify-center hover:bg-blue-600 transition-all" title="Generate Share Link">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                                    </button>
                                 </div>
 
                                 @if($file->rating)
@@ -279,6 +284,41 @@
                     <button type="submit" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-widest shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">Initialize</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- View Reports Modal -->
+    <div x-data="{ show: false }" 
+         x-on:open-modal.window="if ($event.detail.name === 'view-reports') show = true"
+         x-on:close-modal.window="if ($event.detail.name === 'view-reports') show = false"
+         x-show="show"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-6"
+         x-cloak>
+        <div x-show="show" x-transition.opacity class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        
+        <div x-show="show" x-transition.scale.95 class="w-full max-w-lg glass-card p-8 relative z-10 border-white/10 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+            <h3 class="text-xl font-bold mb-6 flex items-center gap-3 text-red-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Abuse Reports
+            </h3>
+            
+            <div class="space-y-4 max-h-96 overflow-y-auto custom-scroll pr-2">
+                @forelse($shareReports as $report)
+                <div class="p-4 bg-white/5 rounded-xl border border-white/5 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-orange-500">{{ $report->reason }}</span>
+                        <span class="text-[9px] text-gray-600">{{ $report->created_at->diffForHumans() }}</span>
+                    </div>
+                    <p class="text-xs text-gray-400 italic leading-relaxed">{{ $report->details ?: 'No additional details provided.' }}</p>
+                </div>
+                @empty
+                <div class="py-10 text-center opacity-30 text-xs font-black uppercase tracking-widest">No reports found</div>
+                @endforelse
+            </div>
+
+            <div class="mt-8">
+                <button type="button" @click="show = false" class="w-full py-3 rounded-xl glass text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all">Close</button>
+            </div>
         </div>
     </div>
 
