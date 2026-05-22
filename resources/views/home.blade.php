@@ -10,6 +10,9 @@
         <!-- Hero Section -->
         @include('components.home.HomeHeroComponent')
 
+        <!-- Media Grid Section -->
+        <livewire:home-media-grid />
+
         <!-- Features Section -->
         @include('components.home.HomeFeaturesComponent')
 

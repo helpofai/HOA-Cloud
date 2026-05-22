@@ -20,5 +20,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+        \Livewire\Livewire::component('home-media-grid', \App\Modules\Media\Livewire\HomeMediaGridLivewireComponent::class);
     }
 }

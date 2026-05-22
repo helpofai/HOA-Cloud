@@ -14,6 +14,7 @@ use App\Modules\Folder\DTOs\CreateFolderData;
 class DashboardMainLivewireComponent extends Component
 {
     public $section = 'files'; // files, photos, music, videos, shared, bin, domain
+    public $filter = 'all'; // all, movies, music, docs
     public $currentFolderUuid = null;
     public $newFolderName = '';
     public $customDomain = '';
@@ -126,11 +127,23 @@ class DashboardMainLivewireComponent extends Component
         if ($this->currentFolderUuid) {
             $folder = $this->currentFolder;
             if ($folder) {
-                return $folder->files;
+                $query = $folder->files();
             }
+        } else {
+            $query = $query->whereNull('folder_id');
         }
 
-        return $query->whereNull('folder_id')->get();
+        // Apply Media Filtering
+        if ($this->filter === 'movies') {
+            $query->where('mime_type', 'like', 'video/%');
+        } elseif ($this->filter === 'music') {
+            $query->where('mime_type', 'like', 'audio/%');
+        } elseif ($this->filter === 'docs') {
+            $query->where('mime_type', 'like', 'application/%')
+                  ->orWhere('mime_type', 'like', 'text/%');
+        }
+
+        return $query->latest()->get();
     }
 
     public function getSharesProperty()

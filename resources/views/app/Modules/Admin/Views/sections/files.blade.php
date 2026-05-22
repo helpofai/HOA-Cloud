@@ -6,6 +6,17 @@
         </div>
         
         <div class="flex items-center gap-4">
+            <div class="flex items-center glass p-1 rounded-xl">
+                @foreach(['all' => 'All', 'movies' => 'Movies', 'music' => 'Music', 'docs' => 'Docs'] as $key => $label)
+                <button 
+                    wire:click="$set('filter', '{{ $key }}')"
+                    class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all {{ $filter === $key ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-gray-500 hover:text-gray-300' }}"
+                >
+                    {{ $label }}
+                </button>
+                @endforeach
+            </div>
+
             <div class="relative group">
                 <input 
                     type="text" 

@@ -18,6 +18,7 @@ class AdminMainLivewireComponent extends Component
     
     // File Monitoring Data
     public $searchFile = '';
+    public $filter = 'all'; // all, movies, music, docs
 
     // Global Kill Switch Data
     public $searchKilled = '';
@@ -242,6 +243,18 @@ class AdminMainLivewireComponent extends Component
                 ->when($this->searchFile, function($q) {
                     $q->where('name', 'like', "%{$this->searchFile}%")
                       ->orWhere('uuid', 'like', "%{$this->searchFile}%");
+                })
+                ->when($this->filter !== 'all', function($q) {
+                    if ($this->filter === 'movies') {
+                        $q->where('mime_type', 'like', 'video/%');
+                    } elseif ($this->filter === 'music') {
+                        $q->where('mime_type', 'like', 'audio/%');
+                    } elseif ($this->filter === 'docs') {
+                        $q->where(function($sq) {
+                            $sq->where('mime_type', 'like', 'application/%')
+                               ->orWhere('mime_type', 'like', 'text/%');
+                        });
+                    }
                 })
                 ->latest()
                 ->take(50)

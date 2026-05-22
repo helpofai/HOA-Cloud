@@ -103,21 +103,35 @@
                             </button>
                             @endif
                             <h1 class="text-2xl font-bold tracking-tight capitalize">{{ $currentFolder ? $currentFolder->name : $section }}</h1>
-                        </div>
-                        <p class="text-xs text-gray-500">Manage and organize your personal storage</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button @click="$dispatch('open-modal', { name: 'create-folder' })" class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all text-gray-300">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                            New Folder
-                        </button>
-                        <button id="upload-files-btn" class="px-5 py-2 bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                            Upload Files
-                        </button>
-                    </div>
-                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Manage and organize your personal storage</p>
+                            </div>
 
+                            <div class="flex items-center gap-6">
+                            <!-- Media Filter -->
+                            <div class="flex items-center glass p-1 rounded-xl">
+                                @foreach(['all' => 'All', 'movies' => 'Movies', 'music' => 'Music', 'docs' => 'Docs'] as $key => $label)
+                                <button 
+                                    wire:click="$set('filter', '{{ $key }}')"
+                                    class="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all {{ $filter === $key ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-500 hover:text-gray-300' }}"
+                                >
+                                    {{ $label }}
+                                </button>
+                                @endforeach
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <button @click="$dispatch('open-modal', { name: 'create-folder' })" class="px-5 py-2 glass rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/5 transition-all text-gray-300">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                    New Folder
+                                </button>
+                                <button id="upload-files-btn" class="px-5 py-2 bg-blue-600 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    Upload Files
+                                </button>
+                            </div>
+                            </div>
+                            </div>
                 <!-- Media Grid -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
                     <!-- Folders First -->
