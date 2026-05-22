@@ -104,11 +104,21 @@ class MediaMetadataService
             $search = Http::get("{$this->tmdbBaseUrl}/search/multi", [
                 'api_key' => $this->tmdbApiKey,
                 'query' => $query,
+                'include_adult' => false,
             ]);
 
             if ($search->successful() && !empty($search->json()['results'])) {
-                $result = $search->json()['results'][0];
-                $type = $result['media_type'] ?? 'movie';
+                // Filter for movies and tv shows, prioritize highest popularity
+                $results = collect($search->json()['results'])
+                    ->filter(fn($r) => in_array($r['media_type'] ?? '', ['movie', 'tv']))
+                    ->sortByDesc('popularity');
+
+                if ($results->isEmpty()) {
+                    return null;
+                }
+
+                $result = $results->first();
+                $type = $result['media_type'];
                 
                 $details = Http::get("{$this->tmdbBaseUrl}/{$type}/{$result['id']}", [
                     'api_key' => $this->tmdbApiKey,
@@ -117,6 +127,18 @@ class MediaMetadataService
 
                 if ($details->successful()) {
                     $data = $details->json();
+                    
+                    // Extract Cast (Top 10)
+                    $cast = collect($data['credits']['cast'] ?? [])
+                        ->take(10)
+                        ->map(fn($c) => $c['name'])
+                        ->toArray();
+
+                    // Extract Genres
+                    $genres = collect($data['genres'] ?? [])
+                        ->map(fn($g) => $g['name'])
+                        ->toArray();
+
                     return [
                         'poster_path' => $data['poster_path'] ?? null,
                         'backdrop_path' => $data['backdrop_path'] ?? null,
@@ -124,8 +146,8 @@ class MediaMetadataService
                         'rating' => $data['vote_average'] ?? null,
                         'release_date' => $data['release_date'] ?? $data['first_air_date'] ?? null,
                         'media_type' => $type,
-                        'cast' => collect($data['credits']['cast'] ?? [])->take(5)->map(fn($c) => $c['name'])->toArray(),
-                        'genres' => collect($data['genres'] ?? [])->map(fn($g) => $g['name'])->toArray(),
+                        'cast' => $cast,
+                        'genres' => $genres,
                     ];
                 }
             }
@@ -142,19 +164,24 @@ class MediaMetadataService
             $response = Http::get($this->omdbBaseUrl, [
                 'apikey' => $this->omdbApiKey,
                 't' => $query,
+                'plot' => 'full'
             ]);
 
             if ($response->successful() && ($response->json()['Response'] ?? 'False') === 'True') {
                 $data = $response->json();
+                
+                $cast = array_filter(array_map('trim', explode(',', $data['Actors'] ?? '')));
+                $genres = array_filter(array_map('trim', explode(',', $data['Genre'] ?? '')));
+
                 return [
-                    'poster_path' => $data['Poster'] !== 'N/A' ? $data['Poster'] : null,
+                    'poster_path' => ($data['Poster'] !== 'N/A') ? $data['Poster'] : null,
                     'backdrop_path' => null,
                     'overview' => $data['Plot'] ?? null,
                     'rating' => (float) ($data['imdbRating'] ?? 0),
                     'release_date' => $data['Released'] ?? null,
                     'media_type' => strtolower($data['Type'] ?? 'movie'),
-                    'cast' => array_map('trim', explode(',', $data['Actors'] ?? '')),
-                    'genres' => array_map('trim', explode(',', $data['Genre'] ?? '')),
+                    'cast' => array_values($cast),
+                    'genres' => array_values($genres),
                 ];
             }
         } catch (\Exception $e) {

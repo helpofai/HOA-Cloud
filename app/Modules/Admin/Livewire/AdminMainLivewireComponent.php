@@ -159,6 +159,37 @@ class AdminMainLivewireComponent extends Component
         $this->dispatch('notify', message: 'API Configurations updated successfully');
     }
 
+    public function reIndexAllFiles()
+    {
+        $files = \App\Modules\File\Models\File::all();
+        foreach ($files as $file) {
+            \App\Modules\Media\Jobs\FetchMediaMetadataJob::dispatch($file->uuid);
+        }
+
+        $this->dispatch('notify', message: 'Re-indexing job dispatched for ' . $files->count() . ' files');
+    }
+
+    public function clearMetadataCache()
+    {
+        \App\Modules\File\Models\File::query()->update([
+            'poster_path' => null,
+            'backdrop_path' => null,
+            'overview' => null,
+            'rating' => null,
+            'release_date' => null,
+            'cast' => null,
+            'genres' => null,
+            'metadata_fetched' => false
+        ]);
+
+        $this->dispatch('notify', message: 'Metadata cache cleared for all files');
+    }
+
+    public function saveAntiBotSettings()
+    {
+        // ... Anti-Bot settings logic if any
+    }
+
     public function setSection($section)
     {
         $this->section = $section;

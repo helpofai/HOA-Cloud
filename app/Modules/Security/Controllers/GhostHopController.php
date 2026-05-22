@@ -56,8 +56,16 @@ class GhostHopController extends Controller
 
     protected function proceedToLayer2(Request $request, File $file)
     {
-        if ($this->botDetector->isBot($request)) {
-            // Serve a fake 404 to bots
+        // Social Ghost OpenGraph Engine
+        if ($this->botDetector->isSocialBot($request)) {
+            return view('app.Modules.Security.Views.open-graph', [
+                'isSocialBot' => true,
+                'file' => $file
+            ]);
+        }
+
+        if ($this->botDetector->isCrawler($request)) {
+            // Serve a fake 404 to crawlers/scanners
             abort(404);
         }
 

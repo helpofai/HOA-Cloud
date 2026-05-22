@@ -60,12 +60,54 @@
             </div>
         </div>
 
-        <div class="mt-12 p-8 glass-card border-white/5 rounded-3xl">
-            <p class="text-sm text-gray-400 leading-relaxed italic">
-                You are viewing an encrypted media stream via HOA Cloud's Ghost Hop Layer 4. 
-                Direct access to the source file is prohibited. Any attempt to scrape or rip 
-                this content will result in IP blacklist and session termination.
-            </p>
+        <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                @if($file->overview)
+                <div class="glass-card p-8 border-white/5 rounded-3xl">
+                    <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4">Synopsis</h2>
+                    <p class="text-sm text-gray-300 leading-relaxed">{{ $file->overview }}</p>
+                </div>
+                @endif
+
+                <div class="p-8 glass-card border-white/5 rounded-3xl">
+                    <p class="text-[10px] text-gray-500 leading-relaxed italic font-bold uppercase tracking-widest">
+                        Security Notice: Ghost Hop Layer 4 Active
+                    </p>
+                    <p class="text-[10px] text-gray-600 mt-2">
+                        You are viewing an encrypted media stream. Direct source access is prohibited. 
+                        Scraping attempts trigger IP blacklist and session termination.
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                @if($file->cast && count($file->cast) > 0)
+                <div class="glass-card p-8 border-white/5 rounded-3xl">
+                    <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4">Top Cast</h2>
+                    <div class="space-y-4">
+                        @foreach($file->cast as $actor)
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-[10px] font-bold text-blue-400">
+                                {{ substr($actor, 0, 1) }}
+                            </div>
+                            <span class="text-xs font-bold text-gray-300">{{ $actor }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                @if($file->genres && count($file->genres) > 0)
+                <div class="glass-card p-8 border-white/5 rounded-3xl">
+                    <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4">Genres</h2>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($file->genres as $genre)
+                        <span class="px-3 py-1 glass rounded-full text-[9px] font-black uppercase tracking-widest text-gray-400 border-white/5">{{ $genre }}</span>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            </div>
         </div>
     </div>
 </div>

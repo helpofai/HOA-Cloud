@@ -8,48 +8,45 @@ use Illuminate\Support\Facades\Cache;
 
 class BotDetectionService
 {
-    protected array $botKeywords = [
+    protected array $crawlerKeywords = [
         'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider', 'yandexbot', 
         'ahrefsbot', 'semrushbot', 'dotbot', 'rogerbot', 'exabot', 'mj12bot',
-        'facebookexternalhit', 'twitterbot', 'rogerbot', 'linkedinbot', 'embedly',
+        'python-requests', 'curl', 'wget', 'postman', 'postmanruntime'
+    ];
+
+    protected array $socialKeywords = [
+        'facebookexternalhit', 'twitterbot', 'linkedinbot', 'embedly',
         'quora link preview', 'showyoubot', 'outbrain', 'pinterest/0.',
-        'telegrambot', 'whatsapp', 'viber', 'skypeuripreview', 'python-requests',
-        'curl', 'wget', 'postman', 'postmanruntime'
+        'telegrambot', 'whatsapp', 'viber', 'skypeuripreview', 'discordbot'
     ];
 
     public function isBot(Request $request): bool
     {
+        return $this->isCrawler($request) || $this->isSocialBot($request);
+    }
+
+    public function isCrawler(Request $request): bool
+    {
         $userAgent = strtolower($request->header('User-Agent', ''));
         $ip = $request->ip();
 
-        // 1. Empty User-Agent is usually a bot
-        if (empty($userAgent)) {
-            $this->logPotentialBot($ip, 'Empty User-Agent');
-            return true;
+        if (empty($userAgent)) return true;
+
+        foreach ($this->crawlerKeywords as $keyword) {
+            if (str_contains($userAgent, $keyword)) return true;
         }
 
-        // 2. Keyword matching in UA
-        foreach ($this->botKeywords as $keyword) {
-            if (str_contains($userAgent, $keyword)) {
-                return true;
-            }
-        }
-
-        // 3. Database IP Blacklist check
-        $isBlacklisted = Cache::remember("ip_blacklisted:{$ip}", 3600, function() use ($ip) {
+        return Cache::remember("ip_blacklisted:{$ip}", 3600, function() use ($ip) {
             return Blacklist::where('ip', $ip)->where('is_active', true)->exists();
-        });
+        }) ?: $this->isAbusiveBehavior($ip);
+    }
 
-        if ($isBlacklisted) {
-            return true;
+    public function isSocialBot(Request $request): bool
+    {
+        $userAgent = strtolower($request->header('User-Agent', ''));
+        foreach ($this->socialKeywords as $keyword) {
+            if (str_contains($userAgent, $keyword)) return true;
         }
-
-        // 4. Behavioral Analysis (Rate Limiting check)
-        if ($this->isAbusiveBehavior($ip)) {
-            $this->logPotentialBot($ip, 'Rate limit exceeded (Behavioral)');
-            return true;
-        }
-        
         return false;
     }
 
