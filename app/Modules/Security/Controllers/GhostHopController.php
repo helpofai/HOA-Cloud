@@ -17,7 +17,7 @@ class GhostHopController extends Controller
     ) {}
 
     /**
-     * Layer 1: The Entry Gate
+     * Layer 1: The Entry Gate (Direct UUID)
      */
     public function entry(Request $request, string $uuid)
     {
@@ -27,6 +27,35 @@ class GhostHopController extends Controller
             abort(403, 'This content is no longer available.');
         }
 
+        return $this->proceedToLayer2($request, $file);
+    }
+
+    /**
+     * Layer 1: The Entry Gate (Share Slug)
+     */
+    public function entryByShare(Request $request, string $slug)
+    {
+        $share = \App\Modules\File\Models\Share::where('slug', $slug)->firstOrFail();
+
+        if (!$share->is_active) {
+            abort(403, 'This specific sharing link has been revoked.');
+        }
+
+        if ($share->file->is_killed) {
+            abort(403, 'The underlying content has been restricted.');
+        }
+
+        // Increment hits
+        $share->increment('hits');
+        
+        // Save share ID to session for reporting purposes later if needed
+        Session::put('gh_share_id', $share->id);
+
+        return $this->proceedToLayer2($request, $share->file);
+    }
+
+    protected function proceedToLayer2(Request $request, File $file)
+    {
         if ($this->botDetector->isBot($request)) {
             // Serve a fake 404 to bots
             abort(404);
@@ -34,7 +63,7 @@ class GhostHopController extends Controller
 
         // Set a secure, HTTP-only session cookie to mark as "Entry Passed"
         Session::put('gh_layer_1_passed', true);
-        Session::put('gh_target_file', $uuid);
+        Session::put('gh_target_file', $file->uuid);
 
         // Redirect to Layer 2 (Verification Hop)
         return redirect()->route('ghost-hop.verify', ['hash' => bin2hex(random_bytes(16))]);
@@ -74,5 +103,41 @@ class GhostHopController extends Controller
         Session::forget('gh_target_file');
 
         return redirect()->route('ghost-hop.watch', ['accessToken' => $token]);
+    }
+
+    public function reportForm(Request $request)
+    {
+        $fileUuid = Session::get('gh_target_file');
+        if (!$fileUuid) {
+            return redirect('/');
+        }
+
+        return view('app.Modules.Security.Views.report', [
+            'file' => File::where('uuid', $fileUuid)->firstOrFail()
+        ]);
+    }
+
+    public function submitReport(Request $request)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:100',
+            'details' => 'nullable|string|max:1000'
+        ]);
+
+        $fileUuid = Session::get('gh_target_file');
+        $shareId = Session::get('gh_share_id');
+
+        \App\Modules\Security\Models\AbuseReport::create([
+            'file_id' => $fileUuid ? File::where('uuid', $fileUuid)->first()?->id : null,
+            'share_id' => $shareId,
+            'reported_url' => url()->previous(),
+            'reporter_ip' => $request->ip(),
+            'reason' => $request->reason,
+            'details' => $request->details,
+            'status' => 'pending'
+        ]);
+
+        return redirect()->route('ghost-hop.verify', ['hash' => bin2hex(random_bytes(16))])
+            ->with('message', 'Report submitted successfully. Thank you for your feedback.');
     }
 }

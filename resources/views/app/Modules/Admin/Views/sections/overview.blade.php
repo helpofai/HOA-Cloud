@@ -15,10 +15,13 @@
         <div class="text-3xl font-black">1,842</div>
         <div class="text-xs text-blue-500 mt-2 font-bold">Bandwidth: 450Mbps</div>
     </div>
-    <div class="glass-card p-6 inner-shadow border-red-500/20">
-        <div class="text-gray-500 text-[10px] font-bold uppercase mb-1">Security Health</div>
-        <div class="text-3xl font-black text-green-500">EXCELLENT</div>
-        <div class="text-xs text-gray-500 mt-2">No active threats</div>
+    <div class="glass-card p-6 inner-shadow border-orange-500/20">
+        <div class="text-gray-500 text-[10px] font-bold uppercase mb-1">Abuse Reports</div>
+        <div class="flex items-center justify-between">
+            <div class="text-3xl font-black text-orange-500">{{ \App\Modules\Security\Models\AbuseReport::where('status', 'pending')->count() }}</div>
+            <button wire:click="setSection('abuse')" class="text-[9px] font-black uppercase text-blue-400 hover:underline">Review</button>
+        </div>
+        <div class="text-xs text-gray-500 mt-2 italic">Pending legal/abuse cases</div>
     </div>
 </div>
 

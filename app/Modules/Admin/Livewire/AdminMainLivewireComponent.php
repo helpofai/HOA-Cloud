@@ -22,6 +22,9 @@ class AdminMainLivewireComponent extends Component
     // Global Kill Switch Data
     public $searchKilled = '';
 
+    // Abuse Management Data
+    public $searchAbuse = '';
+
     // Multi-Domain Data
     public $multiDomainEnabled = false;
     public $newNodeDomain = '';
@@ -199,12 +202,40 @@ class AdminMainLivewireComponent extends Component
         $this->dispatch('notify', message: 'IP removed from blacklist.');
     }
 
+    public function killShare($shareId)
+    {
+        $share = \App\Modules\File\Models\Share::find($shareId);
+        if ($share) {
+            $share->update(['is_active' => false]);
+            $this->dispatch('notify', message: 'Link-wise Kill Switch activated.');
+        }
+    }
+
+    public function restoreShare($shareId)
+    {
+        $share = \App\Modules\File\Models\Share::find($shareId);
+        if ($share) {
+            $share->update(['is_active' => true]);
+            $this->dispatch('notify', message: 'Share link restored.');
+        }
+    }
+
+    public function dismissAbuse($abuseId)
+    {
+        $report = \App\Modules\Security\Models\AbuseReport::find($abuseId);
+        if ($report) {
+            $report->update(['status' => 'dismissed']);
+            $this->dispatch('notify', message: 'Abuse report dismissed.');
+        }
+    }
+
     public function render()
     {
         $files = [];
         $usersData = [];
         $blacklistData = [];
         $killedFilesData = [];
+        $abuseReportsData = [];
 
         if ($this->section === 'files') {
             $files = File::with(['user'])
@@ -238,13 +269,23 @@ class AdminMainLivewireComponent extends Component
                 })
                 ->latest()
                 ->paginate(20);
+        } elseif ($this->section === 'abuse') {
+            $abuseReportsData = \App\Modules\Security\Models\AbuseReport::with(['file', 'share'])
+                ->when($this->searchAbuse, function($q) {
+                    $q->where('reported_url', 'like', "%{$this->searchAbuse}%")
+                      ->orWhere('reason', 'like', "%{$this->searchAbuse}%");
+                })
+                ->where('status', 'pending')
+                ->latest()
+                ->paginate(20);
         }
 
         return view('app.Modules.Admin.Views.admin-main-livewire-component', [
             'files' => $files,
             'usersData' => $usersData,
             'blacklistData' => $blacklistData,
-            'killedFilesData' => $killedFilesData
+            'killedFilesData' => $killedFilesData,
+            'abuseReportsData' => $abuseReportsData
         ])->layout('layouts.dashboard', ['title' => 'Super Admin - Hoa Cloud']);
     }
 }

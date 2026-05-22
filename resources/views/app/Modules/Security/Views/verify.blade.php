@@ -17,6 +17,12 @@
         </div>
 
         <div class="space-y-6">
+            @if(session('message'))
+            <div class="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-500 text-[10px] font-bold uppercase tracking-widest">
+                {{ session('message') }}
+            </div>
+            @endif
+
             <div class="p-6 glass bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center gap-4">
                 <div class="text-[10px] font-black uppercase tracking-widest text-blue-400">Security Challenge</div>
                 
@@ -28,9 +34,16 @@
                 </form>
             </div>
 
-            <div class="pt-4 flex flex-col items-center gap-2">
-                <div class="text-[10px] text-gray-600 uppercase font-bold tracking-tighter">File Information (Masked)</div>
-                <div class="text-xs font-medium text-gray-400">{{ Str::limit($file->name, 20) }} ({{ Number::fileSize($file->size) }})</div>
+            <div class="pt-4 flex flex-col items-center gap-4">
+                <div class="flex flex-col items-center gap-2">
+                    <div class="text-[10px] text-gray-600 uppercase font-bold tracking-tighter">File Information (Masked)</div>
+                    <div class="text-xs font-medium text-gray-400">{{ Str::limit($file->name, 20) }} ({{ Number::fileSize($file->size) }})</div>
+                </div>
+
+                <a href="{{ route('ghost-hop.report') }}" class="text-[9px] font-black text-gray-700 uppercase tracking-widest hover:text-red-500 transition-colors flex items-center gap-2">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Report this link
+                </a>
             </div>
         </div>
         

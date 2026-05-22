@@ -106,6 +106,9 @@
                 @case('kill-switch')
                     @include('app.Modules.Admin.Views.sections.kill-switch')
                     @break
+                @case('abuse')
+                    @include('app.Modules.Admin.Views.sections.abuse')
+                    @break
                 @case('shared-hosting')
                     @include('app.Modules.Admin.Views.sections.shared-hosting')
                     @break
