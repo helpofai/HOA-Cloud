@@ -6,7 +6,7 @@
     <title>{{ $title ?? 'Dashboard - Hoa Cloud' }}</title>
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="{{ asset('js/alpine.js') }}"></script>
     
     @livewireStyles
     <style>
@@ -29,6 +29,8 @@
     </div>
 
     {{ $slot }}
+
+    @include('components.media.AudioMiniPlayerComponent')
 
     @livewireScripts
     <script>

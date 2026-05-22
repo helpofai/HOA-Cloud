@@ -190,6 +190,24 @@ class DashboardMainLivewireComponent extends Component
         $this->dispatch('open-modal', name: 'view-reports');
     }
 
+    public function playAudio($fileUuid)
+    {
+        $file = File::where('uuid', $fileUuid)->firstOrFail();
+        
+        // Generate a stream token for the audio
+        $tokenService = app(\App\Modules\Security\Services\GhostTokenService::class);
+        $token = $tokenService->generate($file->uuid, request()->ip(), request()->userAgent());
+        
+        $streamUrl = route('ghost-hop.stream', ['token' => $token]);
+
+        $this->dispatch('audio-play', [
+            'url' => $streamUrl,
+            'name' => $file->name,
+            'poster' => $file->poster_path ? (Str::startsWith($file->poster_path, 'http') ? $file->poster_path : config('hoa-cloud.tmdb.image_url') . $file->poster_path) : null,
+            'uuid' => $file->uuid
+        ]);
+    }
+
     public function render()
     {
         return view('app.Modules.Dashboard.Views.dashboard-main-livewire-component', [

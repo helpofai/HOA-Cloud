@@ -1,0 +1,103 @@
+/* Spotify-style Mini Player Skin */
+.mini-player {
+    height: 90px;
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mini-player.hidden {
+    transform: translateY(100%);
+}
+
+.mini-player-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 30%;
+}
+
+.mini-player-art {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: #1a1a1a;
+    object-cover: cover;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.mini-player-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 40%;
+}
+
+.mini-player-btns {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.btn-play-pause {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.btn-play-pause:hover {
+    transform: scale(1.05);
+}
+
+.mini-player-progress {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.waveform-container {
+    height: 30px;
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+}
+
+.mini-player-volume {
+    width: 30%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+.volume-slider {
+    width: 100px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    position: relative;
+}
+
+.volume-slider-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 2px;
+}

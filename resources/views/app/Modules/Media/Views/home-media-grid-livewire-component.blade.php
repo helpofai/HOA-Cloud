@@ -50,9 +50,15 @@
                     </div>
 
                     <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div class="w-8 h-8 rounded-full glass border-white/20 flex items-center justify-center text-blue-500 shadow-xl">
-                            <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
+                        @if(Str::startsWith($file->mime_type, 'audio/'))
+                            <button wire:click.stop="playAudio('{{ $file->uuid }}')" class="w-8 h-8 rounded-full glass border-white/20 flex items-center justify-center text-blue-500 shadow-xl">
+                                <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                        @else
+                            <div class="w-8 h-8 rounded-full glass border-white/20 flex items-center justify-center text-blue-500 shadow-xl">
+                                <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

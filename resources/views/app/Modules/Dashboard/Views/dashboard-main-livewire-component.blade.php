@@ -182,7 +182,13 @@
                                 @endif
                                 <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 gap-3">
                                     <div class="w-10 h-10 rounded-full glass border-white/20 flex items-center justify-center hover:bg-white/20 transition-all">
-                                        <svg class="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        @if(Str::startsWith($file->mime_type, 'audio/'))
+                                            <button wire:click.prevent="playAudio('{{ $file->uuid }}')" class="w-full h-full flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                            </button>
+                                        @else
+                                            <svg class="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        @endif
                                     </div>
                                     <button wire:click.prevent="generateShareLink('{{ $file->uuid }}')" class="w-10 h-10 rounded-full glass border-white/20 flex items-center justify-center hover:bg-blue-600 transition-all" title="Generate Share Link">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
