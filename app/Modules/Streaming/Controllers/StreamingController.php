@@ -47,7 +47,8 @@ class StreamingController extends Controller
     {
         $token = $request->get('token');
         
-        $fileUuid = $this->tokenService->validateAndBurn($token, $request->ip(), $request->userAgent());
+        // We use a stream-specific validation that allows multiple ranges for the SAME session
+        $fileUuid = $this->getStreamFileUuid($token, $request);
 
         if (!$fileUuid) {
             abort(403, 'Stream session expired or unauthorized.');
@@ -60,12 +61,46 @@ class StreamingController extends Controller
             abort(404, 'Physical file not found.');
         }
 
-        // We DON'T burn the token here if we want to support seeking (multiple range requests)
-        // However, the architecture says Layer 5 is "Token Burn".
-        // To support seeking, we can either:
-        // 1. Keep the token alive for a short duration (e.g. 2 hours)
-        // 2. Exchange it for a temporary session-based stream session.
+        // Determine speed limit based on user role
+        // Premium roles (Admin, Super-Admin, Pro) get unlimited speed
+        // Others are throttled to 1MB/s (1024 KB/s) or 500KB/s
+        $speedLimit = $this->determineSpeedLimit($file->user);
         
-        return $this->streamingService->stream($path, $file->mime_type, $file->name);
+        return $this->streamingService->stream($path, $file->mime_type, $file->name, $speedLimit);
+    }
+
+    protected function getStreamFileUuid(string $token, Request $request): ?string
+    {
+        // First check if this token is ALREADY an active stream session
+        $sessionKey = "active_stream:" . md5($token . $request->ip() . $request->userAgent());
+        $cachedUuid = \Illuminate\Support\Facades\Cache::get($sessionKey);
+        
+        if ($cachedUuid) {
+            return $cachedUuid;
+        }
+
+        // If not cached, validate the token normally (and burn it)
+        $fileUuid = $this->tokenService->validateAndBurn($token, $request->ip(), $request->userAgent());
+
+        if ($fileUuid) {
+            // Mark this token (or its signature) as an active session for 4 hours
+            // to allow seeking/range requests
+            \Illuminate\Support\Facades\Cache::put($sessionKey, $fileUuid, now()->addHours(4));
+        }
+
+        return $fileUuid;
+    }
+
+    protected function determineSpeedLimit($owner): ?int
+    {
+        $user = auth()->user();
+        
+        // If requester is the owner, or an admin/pro, unlimited
+        if ($user && ($user->isAdmin() || $user->role === \App\Core\Enums\UserRole::PRO || $user->id === $owner->id)) {
+            return null;
+        }
+
+        // Default limit for guests or standard users (1000 KB/s = ~8Mbps)
+        return (int) \App\Shared\Models\Setting::get('default_stream_speed', 1024);
     }
 }
